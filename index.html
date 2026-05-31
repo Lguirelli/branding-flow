@@ -1,40 +1,38 @@
 <!doctype html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
-  <meta http-equiv="Pragma" content="no-cache" />
-  <meta http-equiv="Expires" content="0" />
-  <title>Brand Flow</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Brand Flow — Branding Kit App</title>
+  <meta name="description" content="Branding Kit App interativo para criar direção visual de marca com arquétipos, fontes e cores." />
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Alegreya+Sans:wght@400;500;700&family=Anton&family=Archivo+Black&family=Baloo+2:wght@400;600;700&family=Bebas+Neue&family=Cal+Sans&family=Bricolage+Grotesque:wght@400;500;600;700&family=Cinzel:wght@400;600;700&family=Cormorant+Garamond:wght@400;500;600;700&family=DM+Sans:wght@400;500;700&family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=Fredoka:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&family=Inter:wght@400;500;600;700;800&family=Lato:wght@400;700&family=Libre+Baskerville:wght@400;700&family=Lora:wght@400;500;700&family=Manrope:wght@400;500;600;700;800&family=Merriweather:wght@400;700&family=Merriweather+Sans:wght@400;500;700&family=Montserrat:wght@400;500;600;700;800&family=Nunito:wght@400;500;600;700;800&family=Nunito+Sans:wght@400;500;600;700&family=Open+Sans:wght@400;500;700&family=Oswald:wght@400;500;600;700&family=Playfair+Display:wght@400;600;700;800&family=Prata&family=Quicksand:wght@400;500;600;700&family=Roboto:wght@400;500;700&family=Sora:wght@400;500;600;700&family=Source+Sans+3:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&family=Syne:wght@400;500;600;700;800&family=Work+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Cal+Sans&family=Alegreya+Sans:wght@400;500;700&family=Anton&family=Archivo+Black&family=Baloo+2:wght@400;600;700&family=Bebas+Neue&family=Bricolage+Grotesque:wght@400;500;600;700&family=Cinzel:wght@400;600;700&family=Cormorant+Garamond:wght@400;500;600;700&family=DM+Sans:wght@400;500;700&family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=Fredoka:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&family=Inter:wght@400;500;600;700;800&family=Lato:wght@400;700&family=Libre+Baskerville:wght@400;700&family=Lora:wght@400;500;700&family=Manrope:wght@400;500;600;700;800&family=Merriweather:wght@400;700&family=Merriweather+Sans:wght@400;500;700&family=Montserrat:wght@400;500;600;700;800&family=Nunito:wght@400;500;600;700;800&family=Nunito+Sans:wght@400;500;600;700&family=Open+Sans:wght@400;500;700&family=Oswald:wght@400;500;600;700&family=Playfair+Display:wght@400;600;700;800&family=Prata&family=Quicksand:wght@400;500;600;700&family=Roboto:wght@400;500;700&family=Sora:wght@400;500;600;700&family=Source+Sans+3:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&family=Syne:wght@400;500;600;700;800&family=Work+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 
-  <link rel="stylesheet" href="./styles.css?v=4" />
+  <link rel="stylesheet" href="./styles.css" />
 </head>
 <body>
-  <div id="app" class="app">
-    <header class="topbar" aria-label="Barra superior">
-      <button class="ghost-btn" type="button" id="backBtn">Voltar</button>
-      <div class="brand-mark">Brand Flow</div>
-      <div class="topbar-actions">
-        <button class="ghost-btn" type="button" id="resetBtn">Reset</button>
-        <button class="primary-small" type="button" id="exportBtn">Exportar JSON</button>
+  <div id="app" class="app-shell">
+    <div class="ambient ambient-a"></div>
+    <div class="ambient ambient-b"></div>
+
+    <header class="app-header" data-app-header hidden>
+      <button class="brand-mark" data-go-intro type="button" aria-label="Voltar para início">
+        <span class="brand-mark-dot"></span>
+        Brand Flow
+      </button>
+      <div class="header-actions">
+        <button class="ghost-btn" data-reset type="button">Resetar</button>
+        <button class="primary-btn small" data-export type="button">Exportar JSON</button>
       </div>
     </header>
 
-    <main id="screenRoot"></main>
+    <main id="view" class="view"></main>
   </div>
 
-  <div class="modal" id="modal" aria-hidden="true">
-    <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
-      <button class="modal-close" type="button" id="modalClose" aria-label="Fechar">×</button>
-      <div id="modalContent"></div>
-    </div>
-  </div>
+  <div id="modal-root"></div>
 
-  <script src="./app.js?v=4"></script>
+  <script src="./app.js"></script>
 </body>
 </html>
