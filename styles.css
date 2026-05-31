@@ -24,7 +24,10 @@
 * { box-sizing: border-box; }
 /* Fix: garante que elementos com atributo hidden fiquem realmente ocultos,
    mesmo quando classes como .modal-backdrop, .topbar ou .screen definem display. */
-[hidden] {
+[hidden],
+.modal-backdrop[hidden],
+.toast[hidden],
+.topbar[hidden] {
   display: none !important;
 }
 
@@ -483,13 +486,18 @@ button { -webkit-tap-highlight-color: transparent; }
   position: fixed;
   z-index: 80;
   inset: 0;
-  display: grid;
+  display: none;
   place-items: center;
   padding: 22px;
   background: rgba(7,7,7,.62);
   backdrop-filter: blur(16px);
   animation: screenIn .25s ease both;
 }
+
+.modal-backdrop.is-open {
+  display: grid;
+}
+
 .archetype-modal {
   width: min(920px, 100%);
   max-height: min(860px, calc(100vh - 44px));

@@ -334,6 +334,7 @@ const $ = (selector, scope = document) => scope.querySelector(selector);
 const $$ = (selector, scope = document) => Array.from(scope.querySelectorAll(selector));
 
 function init() {
+  closeModal(true);
   bindBaseEvents();
   renderStep();
   syncBrandInputs();
@@ -478,6 +479,7 @@ function openArchetypeModal(id, mode) {
   $("[data-use-archetype]").addEventListener("click", useActiveArchetype);
   $("[data-close-modal-secondary]").addEventListener("click", closeModal);
   modal.hidden = false;
+  modal.classList.add("is-open");
   document.body.style.overflow = "hidden";
 }
 
@@ -485,8 +487,14 @@ function modalInfo(title, text) {
   return `<div class="modal-info"><strong>${title}</strong><p>${text}</p></div>`;
 }
 
-function closeModal() {
-  $("[data-modal]").hidden = true;
+function closeModal(force = false) {
+  const modal = $("[data-modal]");
+  if (!modal) return;
+  modal.classList.remove("is-open");
+  modal.hidden = true;
+  const content = $("[data-modal-content]");
+  if (content && force) content.innerHTML = "";
+  activeModalArchetype = null;
   document.body.style.overflow = "";
 }
 
