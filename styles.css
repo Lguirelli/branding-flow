@@ -2391,3 +2391,88 @@ body::before {
     padding: 4px 7px !important;
   }
 }
+
+/* =========================================================
+   FINAL PREVIEW — CORES NO LUGAR DO POST E BOXES EQUILIBRADOS
+========================================================= */
+
+.final-screen .preview-field-label {
+  display: none !important;
+}
+
+.final-screen .preview-edit-brand-name h2,
+.final-screen .preview-edit-slogan p {
+  border-bottom: 0 !important;
+  background: transparent !important;
+}
+
+.final-screen .preview-edit-brand-name h2 {
+  font-family: var(--brand-font-heading, var(--app-font-display)) !important;
+}
+
+.final-screen .preview-edit-slogan p {
+  font-family: var(--brand-font-body, var(--app-font-ui)) !important;
+}
+
+.final-screen .preview-colors-board {
+  display: block !important;
+}
+
+.final-screen .preview-colors-board h3 {
+  text-transform: uppercase !important;
+  letter-spacing: -.04em !important;
+}
+
+.final-screen .preview-colors-board .preview-palette {
+  grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+}
+
+.final-screen .preview-color-chip {
+  min-height: 78px !important;
+  align-content: end !important;
+}
+
+.final-screen .preview-color-chip strong,
+.final-screen .preview-color-chip em {
+  max-width: 100% !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
+}
+
+.final-screen .final-nodes.final-nodes-two,
+.final-layout-clean .final-nodes.final-nodes-two {
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  max-width: 960px !important;
+  align-items: stretch !important;
+}
+
+.final-screen .final-nodes.final-nodes-two .flow-node {
+  min-height: clamp(260px, 31vh, 360px) !important;
+  display: flex !important;
+  flex-direction: column !important;
+}
+
+.final-screen .typography-strategy-card .sample-text,
+.final-screen .archetype-strategy-card .strategy-blend {
+  margin-top: auto !important;
+}
+
+.final-screen .typography-strategy-card {
+  justify-content: flex-start !important;
+}
+
+@media (max-width: 920px) {
+  .final-screen .final-nodes.final-nodes-two,
+  .final-layout-clean .final-nodes.final-nodes-two {
+    grid-template-columns: 1fr !important;
+  }
+
+  .final-screen .final-nodes.final-nodes-two .flow-node {
+    min-height: auto !important;
+  }
+
+  .final-screen .preview-colors-board .preview-palette {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+}

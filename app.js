@@ -1221,7 +1221,7 @@ function renderFinalFlow(view) {
     <section class="screen node-screen final-screen">
       ${screenHead("Painel da marca", "Edite o nome e o slogan diretamente no preview. Clique em uma cor para transformá-la na cor principal.")}
       <div class="final-layout final-layout-clean">
-        <div class="final-nodes">
+        <div class="final-nodes final-nodes-two">
           <article class="flow-node archetype-strategy-card">
             <h3>Arquétipos</h3>
             <p><strong>Principal:</strong> ${primary?.name || "Não definido"}</p>
@@ -1232,7 +1232,7 @@ function renderFinalFlow(view) {
               <strong>Combinação:</strong> ${archetypeBlendText(primary, secondary)}
             </div>
           </article>
-          <article class="flow-node">
+          <article class="flow-node typography-strategy-card">
             <h3>Tipografia</h3>
             <p><strong>Título:</strong> ${state.selectedHeadingFont}</p>
             <p><strong>Texto:</strong> ${state.selectedBodyFont}</p>
@@ -1240,14 +1240,6 @@ function renderFinalFlow(view) {
               <span class="sample-title" style="font-family:'${state.selectedHeadingFont}'">Direção visual</span>
               <span class="sample-body" style="font-family:'${state.selectedBodyFont}'">Combinação tipográfica aplicada ao preview.</span>
             </div>
-          </article>
-          <article class="flow-node colors-summary-card">
-            <h3>Cores</h3>
-            <p>Clique em qualquer cor no preview para usá-la como nova cor principal.</p>
-            <div class="swatch-row">
-              ${Object.entries(buildBrandKitToken().colors).map(([k,v]) => `<button class="swatch-pill swatch-click" data-preview-color="${v}" data-preview-role="${k}" title="Usar ${v} como principal" style="background:${v}"><span>${colorRoleLabel(k)}</span></button>`).join("")}
-            </div>
-            ${Object.entries(buildBrandKitToken().colors).map(([k,v]) => `<p><strong>${colorRoleLabel(k)}:</strong> <span class="hex">${v}</span></p>`).join("")}
           </article>
         </div>
         <aside class="preview-panel">
@@ -1279,14 +1271,12 @@ function brandPreview(primary, secondary) {
       <div class="preview-hero">
         <span class="preview-badge">${primary?.name || "Arquétipo"}${secondary ? " + " + secondary.name : ""}</span>
 
-        <div class="preview-edit-block">
-          <span class="preview-field-label">Nome da marca</span>
-          <h2 contenteditable="true" spellcheck="false" data-preview-edit="brandName">${escapeHtml(state.brandName)}</h2>
+        <div class="preview-edit-block preview-edit-brand-name">
+          <h2 contenteditable="true" spellcheck="false" data-preview-edit="brandName" aria-label="Nome da marca">${escapeHtml(state.brandName)}</h2>
         </div>
 
-        <div class="preview-edit-block">
-          <span class="preview-field-label">Slogan</span>
-          <p contenteditable="true" spellcheck="false" data-preview-edit="tagline">${escapeHtml(state.tagline)}</p>
+        <div class="preview-edit-block preview-edit-slogan">
+          <p contenteditable="true" spellcheck="false" data-preview-edit="tagline" aria-label="Slogan">${escapeHtml(state.tagline)}</p>
         </div>
 
         <div class="preview-paragraph-test">
@@ -1296,9 +1286,9 @@ function brandPreview(primary, secondary) {
 
         <span class="preview-cta" contenteditable="true" spellcheck="false" data-preview-edit="ctaText">${escapeHtml(state.ctaText)}</span>
       </div>
-      <div class="preview-social">
-        <h3>Post de marca</h3>
-        <p>Uma amostra rápida de como a identidade pode aparecer em uma peça digital.</p>
+      <div class="preview-social preview-colors-board">
+        <h3>Cores</h3>
+        <p>Clique em qualquer cor para transformá-la na cor principal da marca.</p>
         <div class="swatch-row preview-palette" aria-label="Cores clicáveis do preview">
           ${Object.entries(buildBrandKitToken().colors).map(([role, value]) => `
             <button class="preview-color-chip" data-preview-color="${value}" data-preview-role="${role}" type="button" title="Usar ${value} como cor principal">
