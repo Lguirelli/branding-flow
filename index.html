@@ -1,158 +1,24 @@
 <!doctype html>
 <html lang="pt-BR">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Brand Flow — Branding Kit App</title>
-  <meta name="description" content="App node-based para montar um mini branding kit com arquétipos, fontes e cores." />
-
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Brand Flow</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cal+Sans&family=Alegreya+Sans:wght@400;500;700&family=Anton&family=Archivo+Black&family=Baloo+2:wght@400;600;700&family=Bebas+Neue&family=Bricolage+Grotesque:wght@400;500;600;700&family=Cinzel:wght@400;600;700&family=Cormorant+Garamond:wght@400;500;600;700&family=DM+Sans:wght@400;500;700&family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=Fredoka:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&family=Inter:wght@400;500;600;700;800&family=Lato:wght@400;700&family=Libre+Baskerville:wght@400;700&family=Lora:wght@400;500;700&family=Manrope:wght@400;500;600;700;800&family=Merriweather:wght@400;700&family=Merriweather+Sans:wght@400;500;700&family=Montserrat:wght@400;500;600;700;800&family=Nunito:wght@400;500;600;700;800&family=Nunito+Sans:wght@400;500;600;700&family=Open+Sans:wght@400;500;700&family=Oswald:wght@400;500;600;700&family=Playfair+Display:wght@400;600;700;800&family=Prata&family=Quicksand:wght@400;500;600;700&family=Roboto:wght@400;500;700&family=Sora:wght@400;500;600;700&family=Source+Sans+3:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&family=Syne:wght@400;500;600;700;800&family=Work+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
-
   <link rel="stylesheet" href="./styles.css" />
 </head>
 <body>
-  <main class="app-shell" id="app">
-    <header class="topbar" data-topbar hidden>
-      <button class="ghost-btn" type="button" data-back-step>Voltar</button>
-      <div class="topbar-brand">
-        <span class="topbar-dot"></span>
-        <strong>Brand Flow</strong>
-      </div>
-      <div class="topbar-actions">
-        <button class="ghost-btn" type="button" data-reset>Reset</button>
-        <button class="primary-btn small" type="button" data-export>Exportar JSON</button>
-      </div>
-    </header>
+  <div id="app" class="app"></div>
 
-    <section class="screen intro-screen is-active" data-screen="intro">
-      <div class="intro-bg-flow" aria-hidden="true">
-        <span class="intro-node intro-node-a">Arquétipo</span>
-        <span class="intro-node intro-node-b">Fontes</span>
-        <span class="intro-node intro-node-c">Cores</span>
-        <span class="intro-node intro-node-d">Preview</span>
-        <svg class="intro-lines" viewBox="0 0 900 420">
-          <path d="M170 210 C295 84 425 84 548 210" />
-          <path d="M170 210 C328 330 494 330 690 210" />
-          <path d="M548 210 C610 160 646 160 724 210" />
-        </svg>
-      </div>
-
-      <div class="intro-content">
-        <span class="intro-kicker">Branding Kit App</span>
-        <h1>Brand Flow</h1>
-        <p class="intro-lead">Crie um mini branding kit visual em poucos passos.</p>
-        <p class="intro-copy">
-          Escolha a personalidade da marca, combine fontes do Google Fonts e construa um sistema visual coerente em um fluxo de nodes.
-        </p>
-        <button class="primary-btn intro-start-btn" type="button" data-start-app>Começar</button>
-      </div>
-    </section>
-
-    <section class="screen archetype-screen" data-screen="primary-archetype">
-      <div class="screen-heading">
-        <span class="eyebrow">Etapa 01</span>
-        <h2>Escolha o arquétipo da sua marca</h2>
-        <p>Cada arquétipo define uma direção visual, verbal e emocional para a identidade.</p>
-      </div>
-      <div class="carousel-wrap">
-        <button class="carousel-btn prev" type="button" data-carousel-prev aria-label="Arquétipo anterior">‹</button>
-        <div class="archetype-carousel" data-carousel="primary"></div>
-        <button class="carousel-btn next" type="button" data-carousel-next aria-label="Próximo arquétipo">›</button>
-      </div>
-    </section>
-
-    <section class="screen archetype-screen" data-screen="secondary-archetype">
-      <div class="screen-heading">
-        <span class="eyebrow">Etapa 02</span>
-        <h2>Escolha um arquétipo secundário</h2>
-        <p>O arquétipo secundário adiciona nuances à personalidade da marca. Essa etapa é opcional.</p>
-        <button class="ghost-btn skip-btn" type="button" data-skip-secondary>Pular</button>
-      </div>
-      <div class="carousel-wrap">
-        <button class="carousel-btn prev" type="button" data-carousel-prev-secondary aria-label="Arquétipo anterior">‹</button>
-        <div class="archetype-carousel" data-carousel="secondary"></div>
-        <button class="carousel-btn next" type="button" data-carousel-next-secondary aria-label="Próximo arquétipo">›</button>
-      </div>
-    </section>
-
-    <section class="screen builder-screen" data-screen="builder">
-      <div class="builder-layout">
-        <section class="flow-panel">
-          <div class="builder-heading">
-            <span class="eyebrow">Brand Flow</span>
-            <h2>Monte o sistema visual</h2>
-            <p>As próximas decisões são liberadas em sequência e ficam conectadas como um fluxo de marca.</p>
-          </div>
-
-          <div class="node-canvas" data-node-canvas>
-            <svg class="flow-lines" viewBox="0 0 1200 1120" preserveAspectRatio="none" aria-hidden="true">
-              <path data-line="arch-font" d="M600 130 C600 210 600 220 600 300" />
-              <path data-line="font-heading-a" d="M600 370 C340 430 250 460 250 535" />
-              <path data-line="font-heading-b" d="M600 370 C600 430 600 460 600 535" />
-              <path data-line="font-heading-c" d="M600 370 C860 430 950 460 950 535" />
-              <path data-line="heading-body" d="M600 610 C600 675 600 690 600 745" />
-              <path data-line="body-primary-a" d="M600 825 C340 880 250 900 250 960" />
-              <path data-line="body-primary-b" d="M600 825 C600 880 600 900 600 960" />
-              <path data-line="body-primary-c" d="M600 825 C860 880 950 900 950 960" />
-            </svg>
-            <div class="node-row row-arch" data-node-row="arch"></div>
-            <div class="node-row row-heading" data-node-row="heading"></div>
-            <div class="node-row row-body" data-node-row="body"></div>
-            <div class="node-row row-primary-color" data-node-row="primary-color"></div>
-          </div>
-
-          <div class="color-branch" data-color-branch hidden>
-            <div class="branch-title">
-              <span class="eyebrow">Cores complementares</span>
-              <h3>Complete o sistema visual</h3>
-            </div>
-            <div class="linked-color-grid" data-linked-colors></div>
-          </div>
-        </section>
-
-        <aside class="preview-panel">
-          <div class="preview-card app-preview-card">
-            <div class="preview-controls">
-              <label>
-                Nome da marca
-                <input type="text" data-brand-name maxlength="24" />
-              </label>
-              <label>
-                Tagline
-                <textarea data-brand-tagline maxlength="140"></textarea>
-              </label>
-            </div>
-          </div>
-
-          <div class="brand-preview" data-brand-preview>
-            <div class="preview-hero">
-              <span class="preview-badge" data-preview-archetypes>Arquétipo</span>
-              <h3 data-preview-title>NOVA</h3>
-              <p data-preview-tagline>Uma marca criada com direção, personalidade e presença.</p>
-              <button type="button">Conhecer marca</button>
-            </div>
-            <div class="preview-social">
-              <span>Post Preview</span>
-              <strong data-preview-social-title>Clareza visual para marcas com personalidade.</strong>
-              <p data-preview-social-text>Arquétipos, fontes e cores aplicados em uma direção visual coerente.</p>
-            </div>
-            <div class="preview-summary" data-preview-summary></div>
-          </div>
-        </aside>
-      </div>
-    </section>
-  </main>
-
-  <div class="modal-backdrop" data-modal hidden>
-    <article class="archetype-modal" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+  <div id="modal" class="modal" aria-hidden="true">
+    <div class="modal-backdrop" data-close-modal></div>
+    <article class="modal-card" role="dialog" aria-modal="true" aria-labelledby="modal-title">
       <button class="modal-close" type="button" data-close-modal aria-label="Fechar">×</button>
-      <div class="modal-content" data-modal-content></div>
+      <div id="modal-content"></div>
     </article>
   </div>
-
-  <div class="toast" data-toast hidden></div>
 
   <script src="./app.js"></script>
 </body>
