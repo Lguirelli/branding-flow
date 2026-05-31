@@ -381,9 +381,9 @@ function renderIntro(view) {
   view.innerHTML = `
     <section class="screen intro-screen">
       <div class="intro-bg-flow" aria-hidden="true">
-        <span class="intro-node intro-node-a">Archetype</span>
-        <span class="intro-node intro-node-b">Fonts</span>
-        <span class="intro-node intro-node-c">Colors</span>
+        <span class="intro-node intro-node-a">Arquétipos</span>
+        <span class="intro-node intro-node-b">Fontes</span>
+        <span class="intro-node intro-node-c">Cores</span>
         <span class="intro-node intro-node-d">Preview</span>
         <svg class="intro-lines" viewBox="0 0 920 430">
           <path d="M120 210 C290 70 440 70 570 210" />
@@ -395,7 +395,7 @@ function renderIntro(view) {
         <span class="kicker">Branding Kit App</span>
         <h1>Brand Flow</h1>
         <p class="intro-lead">Crie um mini branding kit visual em poucos passos.</p>
-        <p class="intro-copy">Escolha a personalidade da marca, combine fontes do Google Fonts e construa um sistema visual coerente em um fluxo de nodes.</p>
+        <p class="intro-copy">Escolha a personalidade da marca, combine fontes do Google Fonts e construa um sistema visual coerente com contraste, ritmo e presença.</p>
         <button class="primary-btn" type="button" data-start>Começar</button>
       </div>
     </section>
@@ -417,7 +417,7 @@ function renderArchetypeStep(view, mode) {
         extra)}
       <div class="carousel-wrap" data-carousel-wrap>
         <div class="carousel" data-carousel>
-          ${getVisibleArchetypes(mode).map((a, i) => archetypeCard(a, i, mode)).join("")}
+          ${getLoopedArchetypes(mode).map((item, i) => archetypeCard(item.archetype, item.displayIndex, mode, item.loop)).join("")}
         </div>
       </div>
     </section>
@@ -425,7 +425,8 @@ function renderArchetypeStep(view, mode) {
   const carousel = view.querySelector("[data-carousel]");
   const carouselWrap = view.querySelector("[data-carousel-wrap]");
   requestAnimationFrame(() => {
-    centerCarouselCard(carousel, carousel.querySelector("[data-card]:not(.is-disabled)") || carousel.querySelector("[data-card]"));
+    const initialCard = carousel.querySelector('[data-loop="middle"]:not(.is-disabled)') || carousel.querySelector("[data-card]:not(.is-disabled)") || carousel.querySelector("[data-card]");
+    centerCarouselCard(carousel, initialCard, "auto");
     updateCarouselCenter(carousel);
   });
   carousel.addEventListener("scroll", () => requestAnimationFrame(() => updateCarouselCenter(carousel)));
@@ -465,11 +466,22 @@ function getVisibleArchetypes(mode) {
   return archetypes.filter(a => allowed.includes(a.id));
 }
 
-function archetypeCard(a, i, mode) {
+function getLoopedArchetypes(mode) {
+  const visible = getVisibleArchetypes(mode);
+  if (!visible.length) return [];
+  const loops = visible.length > 1 ? ["start", "middle", "end"] : ["middle"];
+  return loops.flatMap(loop => visible.map((archetype, index) => ({
+    archetype,
+    displayIndex: index,
+    loop
+  })));
+}
+
+function archetypeCard(a, i, mode, loop = "middle") {
   const disabled = getArchetypeDisabled(a.id, mode);
   const badge = disabled === "primary" ? `<span class="card-badge">Arquétipo principal</span>` : disabled === "incompatible" ? `<span class="card-badge">Pouco compatível</span>` : "";
   return `
-    <article class="archetype-card ${disabled ? "is-disabled" : ""}" data-card data-id="${a.id}">
+    <article class="archetype-card ${disabled ? "is-disabled" : ""}" data-card data-id="${a.id}" data-loop="${loop}">
       <div>
         <span class="card-index">${String(i + 1).padStart(2, "0")}</span>
         <h3>${a.name}</h3>
@@ -512,10 +524,10 @@ function getArchetypeDisabled(id, mode) {
   return allowed.includes(id) ? null : "incompatible";
 }
 
-function centerCarouselCard(carousel, card) {
+function centerCarouselCard(carousel, card, behavior = "smooth") {
   if (!carousel || !card) return;
   const left = card.offsetLeft - (carousel.clientWidth / 2) + (card.offsetWidth / 2);
-  carousel.scrollTo({ left: Math.max(0, left), behavior: "smooth" });
+  carousel.scrollTo({ left: Math.max(0, left), behavior });
 }
 
 function setupMouseGuidedCarousel(wrap, carousel) {
@@ -541,11 +553,7 @@ function setupMouseGuidedCarousel(wrap, carousel) {
 
     carousel.scrollLeft += speed;
 
-    const maxScroll = carousel.scrollWidth - carousel.clientWidth;
-    if (maxScroll > 0) {
-      if (carousel.scrollLeft >= maxScroll - 4) carousel.scrollLeft = 4;
-      if (carousel.scrollLeft <= 2) carousel.scrollLeft = maxScroll - 6;
-    }
+    keepCarouselInLoop(carousel);
 
     updateCarouselCenter(carousel);
     raf = requestAnimationFrame(tick);
@@ -579,6 +587,19 @@ function setupMouseGuidedCarousel(wrap, carousel) {
 
   wrap.addEventListener("mouseleave", stop);
   wrap.addEventListener("touchstart", stop, { passive: true });
+}
+
+function keepCarouselInLoop(carousel) {
+  const middleCards = [...carousel.querySelectorAll('[data-loop="middle"]')];
+  if (middleCards.length < 2) return;
+  const firstMiddle = middleCards[0];
+  const lastMiddle = middleCards[middleCards.length - 1];
+  const firstLimit = firstMiddle.offsetLeft - carousel.clientWidth * 0.55;
+  const lastLimit = lastMiddle.offsetLeft + lastMiddle.offsetWidth - carousel.clientWidth * 0.45;
+  const segment = lastLimit - firstLimit;
+  if (segment <= 0) return;
+  if (carousel.scrollLeft < firstLimit) carousel.scrollLeft += segment;
+  if (carousel.scrollLeft > lastLimit) carousel.scrollLeft -= segment;
 }
 
 function updateCarouselCenter(carousel) {
@@ -766,8 +787,7 @@ function primaryColorNode(c) {
     <article class="option-node" data-primary-color="${c.hex}" tabindex="0" role="button">
       <div class="swatch" style="background:${c.hex}"></div>
       <div class="color-meta">
-        <h3>${c.name}</h3>
-        <span class="hex">${c.hex}</span>
+        <div class="color-title-line"><h3>${c.name}</h3><span class="hex">${c.hex}</span></div>
         <p>${c.meaning}. ${c.reason}</p>
       </div>
     </article>
@@ -809,7 +829,7 @@ function renderLinkedColors(view) {
     </section>
   `;
   view.querySelectorAll("[data-color-role]").forEach(card => {
-    card.addEventListener("dblclick", () => {
+    card.addEventListener("click", () => {
       if (card.dataset.low === "true") return;
       selectLinkedColor(card.dataset.colorRole, { name: card.dataset.colorName, hex: card.dataset.colorHex });
     });
@@ -825,75 +845,86 @@ function renderLinkedColors(view) {
 }
 
 function generateLinkedColorOptions(primaryColor, primaryArchetype, secondaryArchetype, headingFont, bodyFont) {
-  const primaryHex = primaryColor?.hex || state.colors.primary || "#2563EB";
+  const primaryHex = (primaryColor?.hex || state.colors.primary || "#2563EB").toUpperCase();
   const primaryHsl = hexToHsl(primaryHex);
   const primaryName = primaryColor?.name || "Cor Principal";
-  const readableDark = "#0F172A";
-  const readableLight = "#F8FAFC";
 
   const secondaryOptions = [
     {
-      name: "Tom Complementar",
-      hex: hslToHex(primaryHsl.h, clamp(primaryHsl.s * 0.46, 18, 54), clamp(primaryHsl.l + (primaryHsl.l < 45 ? 28 : -18), 24, 78)),
-      reason: `derivado de ${primaryName}`
+      name: "Tom Análogo",
+      hex: readableVariant(primaryHsl.h, primaryHsl.s * 0.56, primaryHsl.l < 48 ? primaryHsl.l + 24 : primaryHsl.l - 18),
+      reason: `acompanha ${primaryName}`
     },
     {
-      name: "Profundidade",
-      hex: hslToHex(primaryHsl.h, clamp(primaryHsl.s * 0.72, 24, 70), clamp(primaryHsl.l * 0.46, 14, 34)),
-      reason: "reforça presença"
+      name: "Base Profunda",
+      hex: readableVariant(primaryHsl.h, primaryHsl.s * 0.68, primaryHsl.l < 38 ? 24 : 22),
+      reason: "cria estrutura"
     },
     {
-      name: "Variação Clara",
-      hex: hslToHex(primaryHsl.h, clamp(primaryHsl.s * 0.38, 12, 42), clamp(primaryHsl.l + 34, 62, 90)),
-      reason: "cria respiro"
+      name: "Respiro Claro",
+      hex: readableVariant(primaryHsl.h, primaryHsl.s * 0.28, 86),
+      reason: "abre espaço visual"
     }
   ];
 
-  const accentHueA = rotateHue(primaryHsl.h, 34);
-  const accentHueB = rotateHue(primaryHsl.h, 156);
-  const accentHueC = rotateHue(primaryHsl.h, 212);
   const accentOptions = [
     {
-      name: "Ação Quente",
-      hex: hslToHex(accentHueA, clamp(primaryHsl.s + 12, 58, 88), clamp(primaryHsl.l + 2, 44, 62)),
-      reason: "contraste para CTA"
+      name: "Contraste Quente",
+      hex: readableVariant(rotateHue(primaryHsl.h, 34), Math.max(primaryHsl.s, 66), 54),
+      reason: "funciona como CTA"
     },
     {
-      name: "Contraste Vivo",
-      hex: hslToHex(accentHueB, clamp(primaryHsl.s + 8, 52, 86), clamp(primaryHsl.l + 4, 42, 64)),
-      reason: "ponto focal"
+      name: "Complementar Vivo",
+      hex: readableVariant(rotateHue(primaryHsl.h, 180), Math.max(primaryHsl.s, 62), 56),
+      reason: "contraste real"
     },
     {
-      name: "Acento Gráfico",
-      hex: hslToHex(accentHueC, clamp(primaryHsl.s + 4, 48, 82), clamp(primaryHsl.l + 8, 46, 68)),
-      reason: "variação editorial"
+      name: "Acento Editorial",
+      hex: readableVariant(rotateHue(primaryHsl.h, -38), Math.max(primaryHsl.s * 0.86, 54), 48),
+      reason: "variação gráfica"
     }
   ];
 
-  const lightBackground = hslToHex(primaryHsl.h, clamp(primaryHsl.s * 0.20, 5, 24), 94);
-  const tintedBackground = hslToHex(primaryHsl.h, clamp(primaryHsl.s * 0.28, 8, 30), 88);
-  const darkBackground = hslToHex(primaryHsl.h, clamp(primaryHsl.s * 0.44, 12, 44), 8);
   const backgroundOptions = [
-    { name: "Papel Claro", hex: lightBackground, reason: "máxima leitura" },
-    { name: "Base Tonal", hex: tintedBackground, reason: "conecta com a principal" },
-    { name: "Fundo Profundo", hex: darkBackground, reason: "contraste editorial" }
+    { name: "Papel Tonal", hex: readableVariant(primaryHsl.h, primaryHsl.s * 0.14, 94), reason: "máxima leitura" },
+    { name: "Base Suave", hex: readableVariant(primaryHsl.h, primaryHsl.s * 0.20, 88), reason: "conecta com a principal" },
+    { name: "Fundo Profundo", hex: readableVariant(primaryHsl.h, primaryHsl.s * 0.38, 9), reason: "contraste editorial" }
   ];
 
   const chosenBg = state.colors.background || backgroundOptions[0].hex;
-  const tonalDarkText = hslToHex(primaryHsl.h, clamp(primaryHsl.s * 0.36, 10, 34), 13);
-  const tonalLightText = hslToHex(primaryHsl.h, clamp(primaryHsl.s * 0.18, 6, 22), 92);
   const textOptions = [
-    { name: "Texto Escuro", hex: tonalDarkText, reason: "para fundos claros" },
-    { name: "Texto Claro", hex: tonalLightText, reason: "para fundos escuros" },
-    { name: "Alto Contraste", hex: getReadableTextColor(chosenBg), reason: "opção segura" }
+    { name: "Texto Principal", hex: getReadableTextColor(chosenBg), reason: "maior contraste" },
+    { name: "Texto Tonal", hex: getReadableTextColor(readableVariant(primaryHsl.h, primaryHsl.s * 0.18, relativeLuminance(chosenBg) > .5 ? 90 : 12)), reason: "coerente com a base" },
+    { name: "Texto Editorial", hex: relativeLuminance(chosenBg) > .5 ? "#202020" : "#F8FAFC", reason: "opção segura" }
   ];
 
   return {
-    secondary: dedupeColors(secondaryOptions),
-    accent: dedupeColors(accentOptions),
-    background: dedupeColors(backgroundOptions),
+    secondary: filterAgainstPrimary(dedupeColors(secondaryOptions), primaryHex),
+    accent: filterAgainstPrimary(dedupeColors(accentOptions), primaryHex),
+    background: filterAgainstPrimary(dedupeColors(backgroundOptions), primaryHex, 1.25),
     text: dedupeColors(textOptions)
   };
+}
+
+function readableVariant(h, s, l) {
+  return hslToHex(rotateHue(h, 0), clamp(s, 8, 92), clamp(l, 6, 96));
+}
+
+function filterAgainstPrimary(options, primaryHex, minRatio = 1.45) {
+  return options.map((option, index) => {
+    let hex = option.hex;
+    let hsl = hexToHsl(hex);
+    let tries = 0;
+    while (getContrastRatio(hex, primaryHex) < minRatio && tries < 8) {
+      const direction = hsl.l > 50 ? 1 : -1;
+      hsl.l = clamp(hsl.l + direction * 7, 8, 94);
+      hsl.s = clamp(hsl.s + 4, 12, 92);
+      hex = hslToHex(rotateHue(hsl.h, 6 + index * 4), hsl.s, hsl.l);
+      hsl = hexToHsl(hex);
+      tries++;
+    }
+    return { ...option, hex };
+  });
 }
 
 function clamp(value, min, max) {
@@ -1029,7 +1060,7 @@ function renderFinalFlow(view) {
   const secondary = state.secondaryArchetype ? getArchetype(state.secondaryArchetype) : null;
   view.innerHTML = `
     <section class="screen node-screen final-screen">
-      ${screenHead("Brand Board", "Edite o nome e o slogan diretamente no preview. Clique em uma cor para transformá-la na cor principal.")}
+      ${screenHead("Painel da marca", "Edite o nome e o slogan diretamente no preview. Clique em uma cor para transformá-la na cor principal.")}
       <div class="final-layout final-layout-clean">
         <div class="final-nodes">
           <article class="flow-node archetype-strategy-card">

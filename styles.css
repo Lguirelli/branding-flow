@@ -1769,3 +1769,332 @@ body::after {
   content: none !important;
   display: none !important;
 }
+
+/* =========================================================
+   AJUSTES — ESCALA FULL SCREEN, ROLETAS, CORES DINÂMICAS
+========================================================= */
+
+/* Intro alinhada à estética editorial/halftone do restante */
+.intro-bg-flow {
+  opacity: .18 !important;
+}
+
+.intro-node {
+  border: 2px solid rgba(255, 209, 0, .45) !important;
+  background: rgba(32, 32, 32, .72) !important;
+  color: rgba(214,214,214,.72) !important;
+  box-shadow: none !important;
+}
+
+.intro-lines path {
+  filter: none !important;
+  opacity: .24 !important;
+  stroke-width: 4 !important;
+}
+
+.intro-content {
+  width: min(760px, calc(100vw - 42px)) !important;
+  min-height: min(620px, calc(100dvh - 110px));
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: center !important;
+  border: 3px solid rgba(255, 209, 0, .34) !important;
+  border-radius: 32px !important;
+  background:
+    radial-gradient(circle at 74% 18%, rgba(255, 209, 0, .12), transparent 28%),
+    linear-gradient(135deg, rgba(20,20,20,.94), rgba(32,32,32,.96)) !important;
+  backdrop-filter: none !important;
+  box-shadow: 12px 12px 0 rgba(0,0,0,.42), 0 26px 80px rgba(0,0,0,.38) !important;
+}
+
+.intro-content h1 {
+  text-transform: uppercase !important;
+  letter-spacing: -.055em !important;
+  text-shadow: none !important;
+}
+
+.intro-lead {
+  color: var(--app-yellow) !important;
+}
+
+.intro-copy {
+  max-width: 560px !important;
+}
+
+/* Roleta contínua com fade lateral suave */
+.carousel-wrap {
+  overflow: hidden !important;
+  position: relative !important;
+  -webkit-mask-image: linear-gradient(90deg, transparent 0%, #000 12%, #000 88%, transparent 100%);
+  mask-image: linear-gradient(90deg, transparent 0%, #000 12%, #000 88%, transparent 100%);
+}
+
+.carousel-wrap::before,
+.carousel-wrap::after {
+  width: min(24vw, 280px) !important;
+  top: 0 !important;
+  bottom: 0 !important;
+  opacity: .95 !important;
+  z-index: 4 !important;
+}
+
+.carousel-wrap::before {
+  background: linear-gradient(90deg, #181817 0%, rgba(24,24,23,.92) 35%, transparent 100%) !important;
+}
+
+.carousel-wrap::after {
+  background: linear-gradient(270deg, #181817 0%, rgba(24,24,23,.92) 35%, transparent 100%) !important;
+}
+
+.carousel {
+  scroll-snap-type: none !important;
+  padding-left: 18vw !important;
+  padding-right: 18vw !important;
+}
+
+.archetype-card {
+  scroll-snap-align: none !important;
+}
+
+/* Cor principal: nome e hex na mesma linha */
+.color-title-line {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-top: 2px;
+}
+
+.color-title-line h3 {
+  margin: 0 !important;
+}
+
+.color-title-line .hex {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  min-height: 28px;
+  padding: 5px 10px;
+  border: 2px solid var(--app-black);
+  border-radius: 999px;
+  background: var(--app-yellow-soft);
+  color: var(--app-black) !important;
+  box-shadow: 3px 3px 0 var(--app-black);
+  font-size: .88rem;
+}
+
+/* Cores complementares: seleção com um clique, sem badge de duplo clique */
+.color-mini::after,
+.option-node::after {
+  content: none !important;
+  display: none !important;
+}
+
+.color-mini {
+  transition: transform .18s ease, box-shadow .18s ease, opacity .18s ease, filter .18s ease;
+}
+
+.color-mini:not(.is-low):hover {
+  transform: translate(-2px, -2px);
+  box-shadow: 7px 7px 0 var(--app-black) !important;
+}
+
+.color-mini.is-selected {
+  background: var(--app-yellow) !important;
+  border-color: var(--app-black) !important;
+  box-shadow: 7px 7px 0 var(--app-black) !important;
+}
+
+/* Brand board em viewport: preview primeiro, três boxes alinhados abaixo */
+.final-screen {
+  min-height: 100dvh !important;
+  height: 100dvh !important;
+  overflow: hidden !important;
+  padding: clamp(20px, 3vh, 34px) 24px 20px !important;
+  display: flex !important;
+  flex-direction: column !important;
+  justify-content: flex-start !important;
+}
+
+.final-screen .screen-head {
+  margin-bottom: clamp(12px, 2vh, 18px) !important;
+}
+
+.final-screen .screen-title {
+  font-size: clamp(3rem, 6.2vw, 5.7rem) !important;
+  line-height: .86 !important;
+}
+
+.final-screen .screen-subtitle {
+  margin-top: 8px !important;
+  max-width: 720px !important;
+  font-size: clamp(.78rem, 1.1vw, .95rem) !important;
+  line-height: 1.35 !important;
+}
+
+.final-screen .final-layout,
+.final-screen .final-layout-clean {
+  width: min(960px, calc(100vw - 48px)) !important;
+  flex: 1 1 auto !important;
+  min-height: 0 !important;
+  gap: clamp(12px, 2vh, 18px) !important;
+}
+
+.final-screen .preview-panel,
+.final-layout-clean .preview-panel {
+  width: 100% !important;
+  max-width: 960px !important;
+  flex: 0 1 auto !important;
+}
+
+.final-screen .brand-preview,
+.final-screen .brand-board-preview {
+  width: 100% !important;
+  max-height: min(55vh, 520px) !important;
+  display: grid !important;
+  grid-template-rows: minmax(0, 1fr) auto !important;
+}
+
+.final-screen .preview-hero {
+  min-height: 0 !important;
+  padding: clamp(18px, 2.8vh, 26px) !important;
+  display: grid !important;
+  align-content: start !important;
+  gap: clamp(8px, 1.3vh, 14px) !important;
+}
+
+.final-screen .preview-edit-block {
+  margin-top: 4px !important;
+}
+
+.final-screen .preview-field-label {
+  margin-bottom: 4px !important;
+  font-size: .58rem !important;
+}
+
+.final-screen .preview-hero h2 {
+  font-size: clamp(2.6rem, 5.5vw, 4.2rem) !important;
+}
+
+.final-screen .preview-hero p {
+  margin: 0 !important;
+  max-width: 520px !important;
+  font-size: clamp(.82rem, 1vw, .96rem) !important;
+  line-height: 1.45 !important;
+}
+
+.final-screen .preview-paragraph-test {
+  margin-top: 6px !important;
+  padding: 12px 14px !important;
+}
+
+.final-screen .preview-paragraph-test p {
+  font-size: clamp(.76rem, .95vw, .9rem) !important;
+  line-height: 1.45 !important;
+}
+
+.final-screen .preview-cta {
+  margin-top: 2px !important;
+  padding: 10px 14px !important;
+}
+
+.final-screen .preview-social {
+  padding: clamp(14px, 2vh, 20px) !important;
+}
+
+.final-screen .preview-social h3 {
+  margin-top: 0 !important;
+  font-size: clamp(1.35rem, 2.4vw, 2rem) !important;
+}
+
+.final-screen .preview-social p {
+  margin: 6px 0 12px !important;
+  font-size: clamp(.75rem, .95vw, .9rem) !important;
+}
+
+.final-screen .preview-palette {
+  margin-top: 8px !important;
+  gap: 8px !important;
+}
+
+.final-screen .preview-color-chip {
+  min-height: 70px !important;
+  padding: 7px !important;
+}
+
+.final-screen .preview-color-chip .swatch-pill {
+  height: 30px !important;
+}
+
+.final-screen .preview-color-chip strong,
+.final-screen .preview-color-chip em {
+  font-size: .58rem !important;
+}
+
+.final-screen .final-nodes,
+.final-layout-clean .final-nodes {
+  width: 100% !important;
+  max-width: 960px !important;
+  flex: 1 1 auto !important;
+  min-height: 0 !important;
+  grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+  gap: clamp(12px, 1.8vw, 18px) !important;
+}
+
+.final-screen .final-nodes .flow-node {
+  min-height: 0 !important;
+  max-height: 100% !important;
+  padding: clamp(14px, 1.8vw, 18px) !important;
+  overflow: hidden !important;
+}
+
+.final-screen .final-nodes .flow-node h3 {
+  font-size: clamp(1.45rem, 2vw, 2rem) !important;
+  margin-bottom: 10px !important;
+}
+
+.final-screen .final-nodes .flow-node p,
+.final-screen .final-nodes .flow-node small,
+.final-screen .final-nodes .flow-node span {
+  font-size: clamp(.72rem, .9vw, .86rem) !important;
+  line-height: 1.38 !important;
+}
+
+.final-screen .strategy-blend {
+  padding: 10px !important;
+  margin-top: 10px !important;
+  font-size: clamp(.72rem, .9vw, .84rem) !important;
+  line-height: 1.35 !important;
+}
+
+.final-screen .sample-text {
+  padding: 12px !important;
+}
+
+.final-screen .swatch-click {
+  width: clamp(42px, 4vw, 58px) !important;
+  height: clamp(42px, 4vw, 58px) !important;
+}
+
+.final-screen .colors-summary-card .swatch-row {
+  gap: 8px !important;
+}
+
+@media (max-width: 920px) {
+  .final-screen {
+    height: auto !important;
+    overflow: visible !important;
+  }
+
+  .final-screen .final-nodes,
+  .final-layout-clean .final-nodes {
+    grid-template-columns: 1fr !important;
+  }
+
+  .final-screen .brand-preview,
+  .final-screen .brand-board-preview {
+    max-height: none !important;
+  }
+}
