@@ -633,13 +633,55 @@ function resetColors() {
   state.colors = { primary: null, secondary: null, accent: null, background: null, text: null };
 }
 
+
+function selectedArchetypeSummary() {
+  const primary = getArchetype(state.primaryArchetype);
+  const secondary = state.secondaryArchetype ? getArchetype(state.secondaryArchetype) : null;
+  return `${primary?.name || "Arquétipo"}${secondary ? " + " + secondary.name : ""}`;
+}
+
+function nodeConnectorSvg(type = "triple") {
+  if (type === "parallel") {
+    return `
+      <svg class="node-connector-svg parallel" viewBox="0 0 1200 420" preserveAspectRatio="none" aria-hidden="true">
+        <path d="M600 54 C460 126 300 150 170 240" />
+        <path d="M600 54 C540 132 470 170 430 240" />
+        <path d="M600 54 C660 132 730 170 770 240" />
+        <path d="M600 54 C740 126 900 150 1030 240" />
+      </svg>
+    `;
+  }
+  return `
+    <svg class="node-connector-svg triple" viewBox="0 0 1000 330" preserveAspectRatio="none" aria-hidden="true">
+      <path d="M500 58 C380 116 255 144 190 220" />
+      <path d="M500 58 C500 130 500 165 500 220" />
+      <path d="M500 58 C620 116 745 144 810 220" />
+    </svg>
+  `;
+}
+
+function workflowContextNode(title, value, caption = "") {
+  return `
+    <div class="workflow-context">
+      <span class="node-dot"></span>
+      <div>
+        <small>${title}</small>
+        <strong>${value}</strong>
+        ${caption ? `<em>${caption}</em>` : ""}
+      </div>
+    </div>
+  `;
+}
+
 function renderHeadingFont(view) {
   const options = getHeadingOptions();
   view.innerHTML = `
-    <section class="screen node-screen">
+    <section class="screen node-screen workflow-screen">
       ${screenHead("Escolha a fonte principal", "As sugestões combinam o arquétipo principal com a nuance do secundário.")}
-      <div class="flow-canvas">
-        <div class="node-grid">
+      <div class="flow-canvas node-workflow">
+        ${nodeConnectorSvg("triple")}
+        ${workflowContextNode("Direção de marca", selectedArchetypeSummary(), "base estratégica")}
+        <div class="node-grid node-route-grid">
           ${options.map(item => fontNode(item, "heading")).join("")}
         </div>
       </div>
@@ -655,7 +697,6 @@ function renderHeadingFont(view) {
     });
   });
 }
-
 function getHeadingOptions() {
   const primary = typographyByArchetype[state.primaryArchetype] || typographyByArchetype.sage;
   if (!state.secondaryArchetype) return primary;
@@ -668,26 +709,29 @@ function fontNode(item, role) {
   const selected = role === "heading" ? state.selectedHeadingFont === item.font : state.selectedBodyFont === item.font;
   const headingFont = role === "heading" ? item.font : state.selectedHeadingFont;
   const bodyFont = role === "heading" ? "Inter" : item.font;
+  const label = role === "heading" ? "Fonte principal" : "Fonte secundária";
   return `
-    <article class="option-node ${selected ? "is-selected" : ""}">
+    <button class="option-node type-node ${selected ? "is-selected" : ""}" ${attr}="${item.font}" type="button">
+      <span class="node-kicker">${label}</span>
       <h3 style="font-family:'${item.font}', ${isSerif(item.font) ? "serif" : "sans-serif"}">${item.font}</h3>
       <p>${item.feeling}</p>
-      <div class="sample-text">
+      <div class="sample-text compact">
         <span class="sample-title" style="font-family:'${headingFont}', ${isSerif(headingFont) ? "serif" : "sans-serif"}">Marca com presença</span>
-        <span class="sample-body" style="font-family:'${bodyFont}', ${isSerif(bodyFont) ? "serif" : "sans-serif"}">Sistema visual com clareza, ritmo e contraste.</span>
+        <span class="sample-body" style="font-family:'${bodyFont}', ${isSerif(bodyFont) ? "serif" : "sans-serif"}">Clareza, ritmo e contraste.</span>
       </div>
-      <button class="node-btn" ${attr}="${item.font}" type="button">Selecionar</button>
-    </article>
+      <span class="node-action">Selecionar</span>
+    </button>
   `;
 }
-
 function renderBodyFont(view) {
   const heading = getSelectedHeadingObject();
   view.innerHTML = `
-    <section class="screen node-screen">
+    <section class="screen node-screen workflow-screen">
       ${screenHead("Escolha a fonte secundária", `Fonte principal selecionada: ${state.selectedHeadingFont}. Agora escolha o par tipográfico.`)}
-      <div class="flow-canvas">
-        <div class="node-grid">
+      <div class="flow-canvas node-workflow">
+        ${nodeConnectorSvg("triple")}
+        ${workflowContextNode("Fonte principal", state.selectedHeadingFont, "node selecionado")}
+        <div class="node-grid node-route-grid">
           ${heading.pairings.map(item => fontNode(item, "body")).join("")}
         </div>
       </div>
@@ -702,7 +746,6 @@ function renderBodyFont(view) {
     });
   });
 }
-
 function getSelectedHeadingObject() {
   return getHeadingOptions().find(f => f.font === state.selectedHeadingFont) || getHeadingOptions()[0];
 }
@@ -710,10 +753,12 @@ function getSelectedHeadingObject() {
 function renderPrimaryColor(view) {
   const options = generatePrimaryColorOptions(state.primaryArchetype, state.secondaryArchetype, state.selectedHeadingFont, state.selectedBodyFont);
   view.innerHTML = `
-    <section class="screen node-screen">
+    <section class="screen node-screen workflow-screen">
       ${screenHead("Escolha a cor principal", "A cor principal define a força visual da marca. As opções consideram arquétipos e fontes escolhidas.")}
-      <div class="flow-canvas">
-        <div class="node-grid">
+      <div class="flow-canvas node-workflow">
+        ${nodeConnectorSvg("triple")}
+        ${workflowContextNode("Tipografia", `${state.selectedHeadingFont} + ${state.selectedBodyFont}`, "combinação escolhida")}
+        <div class="node-grid node-route-grid">
           ${options.map(color => primaryColorNode(color)).join("")}
         </div>
       </div>
@@ -726,7 +771,6 @@ function renderPrimaryColor(view) {
     });
   });
 }
-
 function generatePrimaryColorOptions(primaryArchetype, secondaryArchetype, headingFont, bodyFont) {
   const primary = baseColorOptions[primaryArchetype] || baseColorOptions.sage;
   if (!secondaryArchetype) return primary.map(c => ({ ...c, reason: "Baseada no arquétipo principal e ajustada ao par tipográfico escolhido." }));
@@ -740,18 +784,18 @@ function generatePrimaryColorOptions(primaryArchetype, secondaryArchetype, headi
 
 function primaryColorNode(c) {
   return `
-    <article class="option-node">
-      <div class="swatch" style="background:${c.hex}"></div>
+    <button class="option-node color-node" data-primary-color="${c.hex}" type="button">
+      <span class="node-kicker">Cor principal</span>
+      <span class="swatch node-swatch" style="background:${c.hex}"></span>
       <div class="color-meta">
         <h3>${c.name}</h3>
         <span class="hex">${c.hex}</span>
         <p>${c.meaning}. ${c.reason}</p>
       </div>
-      <button class="node-btn" data-primary-color="${c.hex}" type="button">Usar cor</button>
-    </article>
+      <span class="node-action">Usar cor</span>
+    </button>
   `;
 }
-
 function selectPrimaryColor(color) {
   state.selectedPrimaryColor = color;
   state.colors.primary = color.hex;
@@ -766,21 +810,19 @@ function selectPrimaryColor(color) {
 function renderLinkedColors(view) {
   const groups = generateLinkedColorOptions(state.selectedPrimaryColor, state.primaryArchetype, state.secondaryArchetype, state.selectedHeadingFont, state.selectedBodyFont);
   view.innerHTML = `
-    <section class="screen node-screen">
+    <section class="screen node-screen workflow-screen">
       ${screenHead("Escolha as cores complementares", "Os grupos ficam ligados à cor principal para criar um sistema visual coerente e com contraste.")}
-      <div class="flow-canvas">
-        <svg class="flow-lines" viewBox="0 0 1200 500" preserveAspectRatio="none">
-          <path d="M600 40 C380 140 240 180 160 270" />
-          <path d="M600 40 C520 150 470 200 430 270" />
-          <path d="M600 40 C700 150 760 200 780 270" />
-          <path d="M600 40 C870 150 990 200 1040 270" />
-        </svg>
-        <div class="flow-node is-selected" style="max-width:420px;margin:0 auto 28px;text-align:center">
-          <div class="swatch" style="height:76px;background:${state.colors.primary}"></div>
-          <h3>${state.selectedPrimaryColor.name}</h3>
-          <span class="hex">${state.colors.primary}</span>
+      <div class="flow-canvas node-workflow linked-color-workflow">
+        ${nodeConnectorSvg("parallel")}
+        <div class="workflow-context primary-color-context">
+          <span class="node-dot" style="background:${state.colors.primary}"></span>
+          <div>
+            <small>Cor principal</small>
+            <strong>${state.selectedPrimaryColor.name}</strong>
+            <em>${state.colors.primary}</em>
+          </div>
         </div>
-        <div class="parallel-groups">
+        <div class="parallel-groups node-parallel-groups">
           ${colorGroup("secondary", "Secundária", groups.secondary)}
           ${colorGroup("accent", "Destaque", groups.accent)}
           ${colorGroup("background", "Fundo", groups.background)}
@@ -807,7 +849,6 @@ function renderLinkedColors(view) {
     setStep("brand-flow");
   });
 }
-
 function generateLinkedColorOptions(primaryColor, primaryArchetype, secondaryArchetype, headingFont, bodyFont) {
   const hex = primaryColor.hex;
   const base = {
@@ -858,15 +899,16 @@ function generateLinkedColorOptions(primaryColor, primaryArchetype, secondaryArc
 function colorGroup(role, label, colors) {
   const bg = role === "text" ? (state.colors.background || "#F8FAFC") : null;
   return `
-    <section class="color-group">
+    <section class="color-group node-color-group">
       <h3>${label}</h3>
       ${colors.map(c => {
         const low = role === "text" && getContrastRatio(c.hex, bg) < 4.5;
         const selected = state.colors[role] === c.hex;
         return `
-          <button class="color-mini ${selected ? "is-selected" : ""} ${low ? "is-low" : ""}" data-color-role="${role}" data-color-hex="${c.hex}" data-color-name="${c.name}" data-low="${low}" type="button">
+          <button class="color-mini color-mini-node ${selected ? "is-selected" : ""} ${low ? "is-low" : ""}" data-color-role="${role}" data-color-hex="${c.hex}" data-color-name="${c.name}" data-low="${low}" type="button">
             <span class="mini-swatch" style="background:${c.hex}"></span>
-            <strong>${c.name}</strong><br>
+            <span class="node-kicker">${label}</span>
+            <strong>${c.name}</strong>
             <span class="hex">${c.hex}</span>
             <small>${c.reason}</small>
             ${low ? `<span class="low-badge">baixo contraste</span>` : ""}
@@ -876,7 +918,6 @@ function colorGroup(role, label, colors) {
     </section>
   `;
 }
-
 function selectLinkedColor(role, color) {
   state[`selected${capitalize(role)}Color`] = color;
   state.colors[role] = color.hex;
@@ -926,32 +967,43 @@ function renderFinalFlow(view) {
   const primary = getArchetype(state.primaryArchetype);
   const secondary = state.secondaryArchetype ? getArchetype(state.secondaryArchetype) : null;
   view.innerHTML = `
-    <section class="screen node-screen">
+    <section class="screen node-screen workflow-screen">
       ${screenHead("Brand Flow", "Seu mini branding kit foi criado. Edite o preview, exporte o JSON ou reinicie o fluxo.")}
-      <div class="final-layout">
-        <div class="final-nodes">
-          <article class="flow-node">
+      <div class="final-layout final-node-layout">
+        <div class="final-nodes final-node-map">
+          <svg class="final-connector-svg" viewBox="0 0 900 680" preserveAspectRatio="none" aria-hidden="true">
+            <path d="M170 110 C290 150 360 165 450 210" />
+            <path d="M730 110 C610 150 540 165 450 210" />
+            <path d="M170 390 C290 330 360 285 450 250" />
+            <path d="M730 390 C610 330 540 285 450 250" />
+            <path d="M450 250 C450 345 450 420 450 520" />
+          </svg>
+          <article class="flow-node final-node final-node-a">
+            <span class="node-kicker">Estratégia</span>
             <h3>Archetype</h3>
             <p><strong>Principal:</strong> ${primary?.name || "Não definido"}</p>
             <p><strong>Secundário:</strong> ${secondary?.name || "Não definido"}</p>
           </article>
-          <article class="flow-node">
+          <article class="flow-node final-node final-node-b">
+            <span class="node-kicker">Sistema verbal</span>
             <h3>Typography</h3>
             <p><strong>Título:</strong> ${state.selectedHeadingFont}</p>
             <p><strong>Texto:</strong> ${state.selectedBodyFont}</p>
-            <div class="sample-text">
+            <div class="sample-text compact">
               <span class="sample-title" style="font-family:'${state.selectedHeadingFont}'">Direção visual</span>
               <span class="sample-body" style="font-family:'${state.selectedBodyFont}'">Combinação tipográfica aplicada ao preview.</span>
             </div>
           </article>
-          <article class="flow-node">
+          <article class="flow-node final-node final-node-c">
+            <span class="node-kicker">Sistema cromático</span>
             <h3>Colors</h3>
             <div class="swatch-row">
               ${Object.entries(state.colors).map(([k,v]) => `<span class="swatch-pill" title="${k}: ${v}" style="background:${v}"></span>`).join("")}
             </div>
             ${Object.entries(state.colors).map(([k,v]) => `<p><strong>${k}:</strong> <span class="hex">${v}</span></p>`).join("")}
           </article>
-          <article class="flow-node">
+          <article class="flow-node final-node final-node-d">
+            <span class="node-kicker">Saída</span>
             <h3>Export</h3>
             <p>Baixe o kit gerado em JSON ou volte para o início.</p>
             <div class="card-footer">
@@ -959,8 +1011,9 @@ function renderFinalFlow(view) {
               <button class="node-btn" data-reset type="button">Resetar</button>
             </div>
           </article>
-          <article class="flow-node" style="grid-column:1/-1">
-            <h3>Editar preview</h3>
+          <article class="flow-node final-node final-node-e">
+            <span class="node-kicker">Preview</span>
+            <h3>Editar marca</h3>
             <div class="edit-fields">
               <label>Nome da marca <input data-edit="brandName" value="${escapeAttr(state.brandName)}"></label>
               <label>Tagline <input data-edit="tagline" value="${escapeAttr(state.tagline)}"></label>
@@ -983,7 +1036,6 @@ function renderFinalFlow(view) {
   });
   bindGlobal();
 }
-
 function brandPreview(primary, secondary) {
   return `
     <div class="brand-preview">
