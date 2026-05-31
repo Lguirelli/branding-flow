@@ -1492,3 +1492,70 @@ body::before {
     grid-template-columns: 1fr;
   }
 }
+
+/* Ajuste: seleção por duplo clique e roleta centralizada */
+.carousel-wrap {
+  width: 100% !important;
+  max-width: 1240px !important;
+  margin-inline: auto !important;
+  overflow: hidden !important;
+  cursor: ew-resize;
+}
+
+.carousel {
+  width: 100% !important;
+  min-height: 480px;
+  padding-left: calc(50% - min(165px, 39vw)) !important;
+  padding-right: calc(50% - min(165px, 39vw)) !important;
+  scroll-padding-inline: 50% !important;
+  align-items: center;
+}
+
+.archetype-card {
+  user-select: none;
+  will-change: transform, opacity;
+}
+
+.option-node,
+.color-mini {
+  cursor: pointer;
+  user-select: none;
+}
+
+.option-node::after,
+.color-mini::after {
+  content: "duplo clique";
+  display: inline-flex;
+  width: fit-content;
+  margin-top: 14px;
+  padding: 4px 9px;
+  border: 2px solid var(--app-black);
+  border-radius: 999px;
+  background: var(--app-yellow-soft);
+  color: var(--app-black);
+  font-family: var(--app-font-ui);
+  font-size: .64rem;
+  font-weight: 900;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+}
+
+.option-node:focus-visible,
+.color-mini:focus-visible,
+.archetype-card:focus-visible {
+  outline: 4px solid var(--app-yellow);
+  outline-offset: 5px;
+}
+
+.option-node .node-btn,
+.color-mini .node-btn {
+  display: none !important;
+}
+
+@media (max-width: 760px) {
+  .carousel {
+    min-height: 430px;
+    padding-left: calc(50% - min(150px, 42vw)) !important;
+    padding-right: calc(50% - min(150px, 42vw)) !important;
+  }
+}

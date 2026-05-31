@@ -424,7 +424,10 @@ function renderArchetypeStep(view, mode) {
   `;
   const carousel = view.querySelector("[data-carousel]");
   const carouselWrap = view.querySelector("[data-carousel-wrap]");
-  updateCarouselCenter(carousel);
+  requestAnimationFrame(() => {
+    centerCarouselCard(carousel, carousel.querySelector("[data-card]:not(.is-disabled)") || carousel.querySelector("[data-card]"));
+    updateCarouselCenter(carousel);
+  });
   carousel.addEventListener("scroll", () => requestAnimationFrame(() => updateCarouselCenter(carousel)));
   setupMouseGuidedCarousel(carouselWrap, carousel);
   view.querySelectorAll("[data-read]").forEach(btn => {
@@ -438,8 +441,8 @@ function renderArchetypeStep(view, mode) {
   view.querySelectorAll(".archetype-card:not(.is-disabled)").forEach(card => {
     card.addEventListener("click", (event) => {
       if (event.target.closest("button")) return;
+      centerCarouselCard(carousel, card);
       updateCarouselCenter(carousel);
-      card.scrollIntoView({ behavior: "smooth", inline: "center", block: "nearest" });
     });
 
     card.addEventListener("dblclick", (event) => {
@@ -509,6 +512,12 @@ function getArchetypeDisabled(id, mode) {
   return allowed.includes(id) ? null : "incompatible";
 }
 
+function centerCarouselCard(carousel, card) {
+  if (!carousel || !card) return;
+  const left = card.offsetLeft - (carousel.clientWidth / 2) + (card.offsetWidth / 2);
+  carousel.scrollTo({ left: Math.max(0, left), behavior: "smooth" });
+}
+
 function setupMouseGuidedCarousel(wrap, carousel) {
   if (!wrap || !carousel) return;
 
@@ -542,12 +551,12 @@ function setupMouseGuidedCarousel(wrap, carousel) {
     raf = requestAnimationFrame(tick);
   };
 
-  wrap.addEventListener("mousemove", (event) => {
+  const updateSpeedFromPointer = (event) => {
     const rect = wrap.getBoundingClientRect();
     const x = event.clientX - rect.left;
     const ratio = x / rect.width;
-    const deadZone = 0.28;
-    const maxSpeed = 10;
+    const deadZone = 0.20;
+    const maxSpeed = 8;
 
     if (ratio < 0.5 - deadZone) {
       speed = -maxSpeed * ((0.5 - deadZone - ratio) / (0.5 - deadZone));
@@ -563,7 +572,10 @@ function setupMouseGuidedCarousel(wrap, carousel) {
     }
 
     if (!raf) raf = requestAnimationFrame(tick);
-  });
+  };
+
+  wrap.addEventListener("mousemove", updateSpeedFromPointer);
+  wrap.addEventListener("pointermove", updateSpeedFromPointer);
 
   wrap.addEventListener("mouseleave", stop);
   wrap.addEventListener("touchstart", stop, { passive: true });
@@ -657,9 +669,9 @@ function renderHeadingFont(view) {
       </div>
     </section>
   `;
-  view.querySelectorAll("[data-heading-font]").forEach(btn => {
-    btn.addEventListener("click", () => {
-      state.selectedHeadingFont = btn.dataset.headingFont;
+  view.querySelectorAll("[data-heading-font]").forEach(card => {
+    card.addEventListener("dblclick", () => {
+      state.selectedHeadingFont = card.dataset.headingFont;
       state.selectedBodyFont = null;
       resetColors();
       saveState();
@@ -681,14 +693,13 @@ function fontNode(item, role) {
   const headingFont = role === "heading" ? item.font : state.selectedHeadingFont;
   const bodyFont = role === "heading" ? "Inter" : item.font;
   return `
-    <article class="option-node ${selected ? "is-selected" : ""}">
+    <article class="option-node ${selected ? "is-selected" : ""}" ${attr}="${item.font}" tabindex="0" role="button">
       <h3 style="font-family:'${item.font}', ${isSerif(item.font) ? "serif" : "sans-serif"}">${item.font}</h3>
       <p>${item.feeling}</p>
       <div class="sample-text">
         <span class="sample-title" style="font-family:'${headingFont}', ${isSerif(headingFont) ? "serif" : "sans-serif"}">Marca com presença</span>
         <span class="sample-body" style="font-family:'${bodyFont}', ${isSerif(bodyFont) ? "serif" : "sans-serif"}">Sistema visual com clareza, ritmo e contraste.</span>
       </div>
-      <button class="node-btn" ${attr}="${item.font}" type="button">Selecionar</button>
     </article>
   `;
 }
@@ -705,9 +716,9 @@ function renderBodyFont(view) {
       </div>
     </section>
   `;
-  view.querySelectorAll("[data-body-font]").forEach(btn => {
-    btn.addEventListener("click", () => {
-      state.selectedBodyFont = btn.dataset.bodyFont;
+  view.querySelectorAll("[data-body-font]").forEach(card => {
+    card.addEventListener("dblclick", () => {
+      state.selectedBodyFont = card.dataset.bodyFont;
       resetColors();
       saveState();
       setStep("primary-color");
@@ -731,9 +742,9 @@ function renderPrimaryColor(view) {
       </div>
     </section>
   `;
-  view.querySelectorAll("[data-primary-color]").forEach(btn => {
-    btn.addEventListener("click", () => {
-      const color = options.find(c => c.hex === btn.dataset.primaryColor);
+  view.querySelectorAll("[data-primary-color]").forEach(card => {
+    card.addEventListener("dblclick", () => {
+      const color = options.find(c => c.hex === card.dataset.primaryColor);
       selectPrimaryColor(color);
     });
   });
@@ -752,14 +763,13 @@ function generatePrimaryColorOptions(primaryArchetype, secondaryArchetype, headi
 
 function primaryColorNode(c) {
   return `
-    <article class="option-node">
+    <article class="option-node" data-primary-color="${c.hex}" tabindex="0" role="button">
       <div class="swatch" style="background:${c.hex}"></div>
       <div class="color-meta">
         <h3>${c.name}</h3>
         <span class="hex">${c.hex}</span>
         <p>${c.meaning}. ${c.reason}</p>
       </div>
-      <button class="node-btn" data-primary-color="${c.hex}" type="button">Usar cor</button>
     </article>
   `;
 }
@@ -798,10 +808,10 @@ function renderLinkedColors(view) {
       </div>
     </section>
   `;
-  view.querySelectorAll("[data-color-role]").forEach(btn => {
-    btn.addEventListener("click", () => {
-      if (btn.dataset.low === "true") return;
-      selectLinkedColor(btn.dataset.colorRole, { name: btn.dataset.colorName, hex: btn.dataset.colorHex });
+  view.querySelectorAll("[data-color-role]").forEach(card => {
+    card.addEventListener("dblclick", () => {
+      if (card.dataset.low === "true") return;
+      selectLinkedColor(card.dataset.colorRole, { name: card.dataset.colorName, hex: card.dataset.colorHex });
     });
   });
   view.querySelector("[data-finish-colors]").addEventListener("click", () => {
@@ -956,13 +966,13 @@ function colorGroup(role, label, colors) {
         const low = role === "text" && getContrastRatio(c.hex, bg) < 4.5;
         const selected = state.colors[role] === c.hex;
         return `
-          <button class="color-mini ${selected ? "is-selected" : ""} ${low ? "is-low" : ""}" data-color-role="${role}" data-color-hex="${c.hex}" data-color-name="${c.name}" data-low="${low}" type="button">
+          <article class="color-mini ${selected ? "is-selected" : ""} ${low ? "is-low" : ""}" data-color-role="${role}" data-color-hex="${c.hex}" data-color-name="${c.name}" data-low="${low}" tabindex="0" role="button">
             <span class="mini-swatch" style="background:${c.hex}"></span>
             <strong>${c.name}</strong><br>
             <span class="hex">${c.hex}</span>
             <small>${c.reason}</small>
             ${low ? `<span class="low-badge">baixo contraste</span>` : ""}
-          </button>
+          </article>
         `;
       }).join("")}
     </section>
