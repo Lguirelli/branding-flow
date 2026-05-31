@@ -1358,3 +1358,42 @@ body::before {
     grid-template-columns: 1fr;
   }
 }
+
+/* Correção: etapa de cores sem linhas diagonais atravessando os cards */
+.linked-colors-screen .flow-lines,
+.color-system-canvas .flow-lines {
+  display: none !important;
+}
+
+.color-system-canvas {
+  position: relative;
+  overflow: visible;
+}
+
+.primary-color-anchor {
+  max-width: 420px;
+  margin: 0 auto 34px;
+  text-align: center;
+  isolation: isolate;
+}
+
+.color-linked-groups {
+  position: relative;
+  z-index: 2;
+}
+
+.color-linked-groups .color-group {
+  position: relative;
+}
+
+.color-linked-groups .color-group::before {
+  content: "";
+  display: block;
+  width: 54px;
+  height: 7px;
+  margin: -4px auto 18px;
+  border: 3px solid var(--app-black);
+  border-radius: 999px;
+  background: var(--app-yellow);
+  box-shadow: 4px 4px 0 var(--app-black);
+}

@@ -778,21 +778,15 @@ function selectPrimaryColor(color) {
 function renderLinkedColors(view) {
   const groups = generateLinkedColorOptions(state.selectedPrimaryColor, state.primaryArchetype, state.secondaryArchetype, state.selectedHeadingFont, state.selectedBodyFont);
   view.innerHTML = `
-    <section class="screen node-screen">
-      ${screenHead("Escolha as cores complementares", "Os grupos ficam ligados à cor principal para criar um sistema visual coerente e com contraste.")}
-      <div class="flow-canvas">
-        <svg class="flow-lines" viewBox="0 0 1200 500" preserveAspectRatio="none">
-          <path d="M600 40 C380 140 240 180 160 270" />
-          <path d="M600 40 C520 150 470 200 430 270" />
-          <path d="M600 40 C700 150 760 200 780 270" />
-          <path d="M600 40 C870 150 990 200 1040 270" />
-        </svg>
-        <div class="flow-node is-selected" style="max-width:420px;margin:0 auto 28px;text-align:center">
+    <section class="screen node-screen linked-colors-screen">
+      ${screenHead("Escolha as cores complementares", "As opções abaixo são geradas dinamicamente a partir da cor principal escolhida, mantendo contraste, coerência e equilíbrio visual.")}
+      <div class="flow-canvas color-system-canvas">
+        <div class="flow-node is-selected primary-color-anchor" style="--anchor-color:${state.colors.primary}">
           <div class="swatch" style="height:76px;background:${state.colors.primary}"></div>
           <h3>${state.selectedPrimaryColor.name}</h3>
           <span class="hex">${state.colors.primary}</span>
         </div>
-        <div class="parallel-groups">
+        <div class="parallel-groups color-linked-groups">
           ${colorGroup("secondary", "Secundária", groups.secondary)}
           ${colorGroup("accent", "Destaque", groups.accent)}
           ${colorGroup("background", "Fundo", groups.background)}
@@ -821,50 +815,136 @@ function renderLinkedColors(view) {
 }
 
 function generateLinkedColorOptions(primaryColor, primaryArchetype, secondaryArchetype, headingFont, bodyFont) {
-  const hex = primaryColor.hex;
-  const base = {
-    secondary: [
-      { name: "Neutro Complementar", hex: "#64748B", reason: "apoia sem competir" },
-      { name: "Profundidade", hex: "#1E293B", reason: "aumenta autoridade" },
-      { name: "Variação Clara", hex: "#CBD5E1", reason: "cria respiro" }
-    ],
-    accent: [
-      { name: "Âmbar de Ação", hex: "#F59E0B", reason: "contraste para CTA" },
-      { name: "Ciano Luminoso", hex: "#22D3EE", reason: "efeito digital" },
-      { name: "Violeta Expressivo", hex: "#8B5CF6", reason: "sofisticação criativa" }
-    ],
-    background: [
-      { name: "Claro Frio", hex: "#F8FAFC", reason: "alta leitura" },
-      { name: "Quase Branco", hex: "#FFFCE1", reason: "unidade com o app" },
-      { name: "Noite Profunda", hex: "#020617", reason: "versão premium" }
-    ],
-    text: [
-      { name: "Grafite", hex: "#0F172A", reason: "leitura em fundos claros" },
-      { name: "Branco Neve", hex: "#F8FAFC", reason: "leitura em fundos escuros" },
-      { name: "Chumbo", hex: "#1F2937", reason: "contraste confortável" }
-    ]
-  };
+  const primaryHex = primaryColor?.hex || state.colors.primary || "#2563EB";
+  const primaryHsl = hexToHsl(primaryHex);
+  const primaryName = primaryColor?.name || "Cor Principal";
+  const readableDark = "#0F172A";
+  const readableLight = "#F8FAFC";
 
-  if (isWarm(hex)) {
-    base.accent = [
-      { name: "Azul Contraste", hex: "#2563EB", reason: "equilibra tons quentes" },
-      { name: "Verde Profundo", hex: "#15803D", reason: "contraste natural" },
-      { name: "Roxo Nobre", hex: "#7C3AED", reason: "sofisticação" }
-    ];
+  const secondaryOptions = [
+    {
+      name: "Tom Complementar",
+      hex: hslToHex(primaryHsl.h, clamp(primaryHsl.s * 0.46, 18, 54), clamp(primaryHsl.l + (primaryHsl.l < 45 ? 28 : -18), 24, 78)),
+      reason: `derivado de ${primaryName}`
+    },
+    {
+      name: "Profundidade",
+      hex: hslToHex(primaryHsl.h, clamp(primaryHsl.s * 0.72, 24, 70), clamp(primaryHsl.l * 0.46, 14, 34)),
+      reason: "reforça presença"
+    },
+    {
+      name: "Variação Clara",
+      hex: hslToHex(primaryHsl.h, clamp(primaryHsl.s * 0.38, 12, 42), clamp(primaryHsl.l + 34, 62, 90)),
+      reason: "cria respiro"
+    }
+  ];
+
+  const accentHueA = rotateHue(primaryHsl.h, 34);
+  const accentHueB = rotateHue(primaryHsl.h, 156);
+  const accentHueC = rotateHue(primaryHsl.h, 212);
+  const accentOptions = [
+    {
+      name: "Ação Quente",
+      hex: hslToHex(accentHueA, clamp(primaryHsl.s + 12, 58, 88), clamp(primaryHsl.l + 2, 44, 62)),
+      reason: "contraste para CTA"
+    },
+    {
+      name: "Contraste Vivo",
+      hex: hslToHex(accentHueB, clamp(primaryHsl.s + 8, 52, 86), clamp(primaryHsl.l + 4, 42, 64)),
+      reason: "ponto focal"
+    },
+    {
+      name: "Acento Gráfico",
+      hex: hslToHex(accentHueC, clamp(primaryHsl.s + 4, 48, 82), clamp(primaryHsl.l + 8, 46, 68)),
+      reason: "variação editorial"
+    }
+  ];
+
+  const lightBackground = hslToHex(primaryHsl.h, clamp(primaryHsl.s * 0.20, 5, 24), 94);
+  const tintedBackground = hslToHex(primaryHsl.h, clamp(primaryHsl.s * 0.28, 8, 30), 88);
+  const darkBackground = hslToHex(primaryHsl.h, clamp(primaryHsl.s * 0.44, 12, 44), 8);
+  const backgroundOptions = [
+    { name: "Papel Claro", hex: lightBackground, reason: "máxima leitura" },
+    { name: "Base Tonal", hex: tintedBackground, reason: "conecta com a principal" },
+    { name: "Fundo Profundo", hex: darkBackground, reason: "contraste editorial" }
+  ];
+
+  const chosenBg = state.colors.background || backgroundOptions[0].hex;
+  const tonalDarkText = hslToHex(primaryHsl.h, clamp(primaryHsl.s * 0.36, 10, 34), 13);
+  const tonalLightText = hslToHex(primaryHsl.h, clamp(primaryHsl.s * 0.18, 6, 22), 92);
+  const textOptions = [
+    { name: "Texto Escuro", hex: tonalDarkText, reason: "para fundos claros" },
+    { name: "Texto Claro", hex: tonalLightText, reason: "para fundos escuros" },
+    { name: "Alto Contraste", hex: getReadableTextColor(chosenBg), reason: "opção segura" }
+  ];
+
+  return {
+    secondary: dedupeColors(secondaryOptions),
+    accent: dedupeColors(accentOptions),
+    background: dedupeColors(backgroundOptions),
+    text: dedupeColors(textOptions)
+  };
+}
+
+function clamp(value, min, max) {
+  return Math.min(max, Math.max(min, value));
+}
+
+function rotateHue(h, deg) {
+  return (h + deg + 360) % 360;
+}
+
+function rgbToHsl(r, g, b) {
+  r /= 255; g /= 255; b /= 255;
+  const max = Math.max(r, g, b);
+  const min = Math.min(r, g, b);
+  let h = 0;
+  let s = 0;
+  const l = (max + min) / 2;
+  if (max !== min) {
+    const d = max - min;
+    s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+    if (max === r) h = (g - b) / d + (g < b ? 6 : 0);
+    if (max === g) h = (b - r) / d + 2;
+    if (max === b) h = (r - g) / d + 4;
+    h *= 60;
   }
-  if (isDark(hex)) {
-    base.background = [
-      { name: "Preto Suave", hex: "#111827", reason: "visual premium" },
-      { name: "Grafite", hex: "#202020", reason: "base escura estável" },
-      { name: "Claro Frio", hex: "#F8FAFC", reason: "contraste editorial" }
-    ];
-    base.text = [
-      { name: "Branco Neve", hex: "#F8FAFC", reason: "leitura em fundo escuro" },
-      { name: "Cinza Claro", hex: "#D6D6D6", reason: "conforto visual" },
-      { name: "Grafite", hex: "#0F172A", reason: "apenas para fundos claros" }
-    ];
-  }
-  return base;
+  return { h, s: s * 100, l: l * 100 };
+}
+
+function hexToHsl(hex) {
+  const { r, g, b } = hexToRgb(hex);
+  return rgbToHsl(r, g, b);
+}
+
+function hslToHex(h, s, l) {
+  s /= 100;
+  l /= 100;
+  const c = (1 - Math.abs(2 * l - 1)) * s;
+  const x = c * (1 - Math.abs((h / 60) % 2 - 1));
+  const m = l - c / 2;
+  let r = 0, g = 0, b = 0;
+  if (h < 60) { r = c; g = x; b = 0; }
+  else if (h < 120) { r = x; g = c; b = 0; }
+  else if (h < 180) { r = 0; g = c; b = x; }
+  else if (h < 240) { r = 0; g = x; b = c; }
+  else if (h < 300) { r = x; g = 0; b = c; }
+  else { r = c; g = 0; b = x; }
+  const toHex = v => Math.round((v + m) * 255).toString(16).padStart(2, "0").toUpperCase();
+  return `#${toHex(r)}${toHex(g)}${toHex(b)}`;
+}
+
+function dedupeColors(colors) {
+  const used = new Set();
+  return colors.map((color, index) => {
+    let hex = color.hex.toUpperCase();
+    while (used.has(hex)) {
+      const hsl = hexToHsl(hex);
+      hex = hslToHex(rotateHue(hsl.h, 18 + index * 9), hsl.s, clamp(hsl.l + 4, 8, 94));
+    }
+    used.add(hex);
+    return { ...color, hex };
+  });
 }
 
 function colorGroup(role, label, colors) {
