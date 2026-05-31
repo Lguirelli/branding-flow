@@ -307,17 +307,31 @@ const defaultState = {
 
 let state = loadState();
 
+function cloneData(value) {
+  if (typeof structuredClone === "function") {
+    return structuredClone(value);
+  }
+  return JSON.parse(JSON.stringify(value));
+}
+
 function loadState() {
   try {
-    const saved = JSON.parse(localStorage.getItem(STORAGE_KEY));
-    return saved ? { ...structuredClone(defaultState), ...saved, colors: { ...defaultState.colors, ...(saved.colors || {}) } } : structuredClone(defaultState);
+    const raw = window.localStorage ? localStorage.getItem(STORAGE_KEY) : null;
+    const saved = raw ? JSON.parse(raw) : null;
+    return saved ? { ...cloneData(defaultState), ...saved, colors: { ...defaultState.colors, ...(saved.colors || {}) } } : cloneData(defaultState);
   } catch {
-    return structuredClone(defaultState);
+    return cloneData(defaultState);
   }
 }
 
 function saveState() {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+  try {
+    if (window.localStorage) {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    }
+  } catch {
+    // O app continua funcionando mesmo quando o navegador bloqueia localStorage em arquivo local.
+  }
 }
 
 function setStep(step) {
@@ -936,8 +950,12 @@ function exportJSON() {
 }
 
 function resetApp() {
-  localStorage.removeItem(STORAGE_KEY);
-  state = structuredClone(defaultState);
+  try {
+    localStorage.removeItem(STORAGE_KEY);
+  } catch {
+    // Ignora bloqueios de localStorage em execução local.
+  }
+  state = cloneData(defaultState);
   render();
 }
 
@@ -946,5 +964,13 @@ function bindGlobal() {
   document.querySelectorAll("[data-reset]").forEach(btn => btn.onclick = resetApp);
   document.querySelectorAll("[data-go-intro]").forEach(btn => btn.onclick = () => setStep("intro"));
 }
+
+document.addEventListener("click", (event) => {
+  const startButton = event.target.closest("[data-start]");
+  if (startButton) {
+    event.preventDefault();
+    setStep("primary-archetype");
+  }
+});
 
 render();

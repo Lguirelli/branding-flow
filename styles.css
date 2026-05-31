@@ -736,3 +736,20 @@ button { border: 0; }
   .header-actions { width: 100%; }
   .header-actions button { flex: 1; }
 }
+
+/* Correção de clique da tela inicial */
+.intro-content {
+  position: relative;
+  z-index: 10;
+  pointer-events: auto;
+}
+
+.intro-bg-flow,
+.ambient {
+  pointer-events: none;
+}
+
+.primary-btn[data-start] {
+  position: relative;
+  z-index: 11;
+}
