@@ -290,15 +290,31 @@ button { border: 0; }
   perspective: 1200px;
 }
 .carousel::-webkit-scrollbar { display: none; }
-.carousel-controls {
+
+.carousel-wrap::before,
+.carousel-wrap::after {
+  content: "";
   position: absolute;
-  inset: auto 0 0;
-  display: flex;
-  justify-content: center;
-  gap: 12px;
+  top: 34px;
+  bottom: 34px;
+  width: min(18vw, 220px);
+  z-index: 5;
   pointer-events: none;
+  opacity: .42;
+  transition: opacity .25s ease;
 }
-.carousel-controls button { pointer-events: auto; }
+.carousel-wrap::before {
+  left: 0;
+  background: linear-gradient(90deg, rgba(32,32,32,.86), transparent);
+}
+.carousel-wrap::after {
+  right: 0;
+  background: linear-gradient(270deg, rgba(32,32,32,.86), transparent);
+}
+.carousel-wrap.is-moving-left::before,
+.carousel-wrap.is-moving-right::after {
+  opacity: .78;
+}
 
 .archetype-card {
   flex: 0 0 min(330px, 78vw);
@@ -318,6 +334,10 @@ button { border: 0; }
   display: flex;
   flex-direction: column;
   justify-content: space-between;
+  cursor: pointer;
+}
+.archetype-card.is-disabled {
+  cursor: not-allowed;
 }
 .archetype-card:nth-child(even) { transform: scale(.88) rotateY(8deg); }
 .archetype-card.is-center {
@@ -374,6 +394,20 @@ button { border: 0; }
   color: rgba(214,214,214,.78);
   font-size: .78rem;
 }
+.double-click-hint {
+  display: inline-flex;
+  align-items: center;
+  min-height: 38px;
+  padding: 0 10px;
+  border-radius: 999px;
+  color: rgba(214, 214, 214, .62);
+  font-size: .72rem;
+  font-weight: 700;
+  letter-spacing: -.02em;
+  border: 1px solid rgba(214,214,214,.10);
+  background: rgba(214,214,214,.05);
+}
+
 .card-footer {
   display: flex;
   gap: 10px;
@@ -752,4 +786,47 @@ button { border: 0; }
 .primary-btn[data-start] {
   position: relative;
   z-index: 11;
+}
+
+
+/* Correção da seleção de arquétipos */
+.double-click-hint {
+  display: inline-flex;
+  align-items: center;
+  min-height: 38px;
+  padding: 0 10px;
+  border-radius: 999px;
+  color: rgba(214, 214, 214, .62);
+  font-size: .72rem;
+  font-weight: 700;
+  letter-spacing: -.02em;
+  border: 1px solid rgba(214,214,214,.10);
+  background: rgba(214,214,214,.05);
+}
+
+.card-footer {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.card-footer .node-btn {
+  flex: 1 1 120px;
+  min-height: 40px;
+}
+
+.card-footer .select-btn {
+  color: var(--app-black);
+  background: linear-gradient(135deg, var(--app-yellow-soft), var(--app-yellow));
+  border-color: rgba(255, 209, 0, .72);
+  box-shadow: 0 0 20px rgba(255, 209, 0, .22);
+}
+
+.archetype-card:not(.is-disabled) {
+  cursor: pointer;
+}
+
+.archetype-card.is-disabled,
+.archetype-card.is-disabled * {
+  cursor: not-allowed;
 }

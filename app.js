@@ -415,25 +415,39 @@ function renderArchetypeStep(view, mode) {
       ${screenHead(isSecondary ? "Escolha um arquétipo secundário" : "Escolha o arquétipo da sua marca",
         isSecondary ? "O arquétipo secundário adiciona nuances à personalidade da marca. Essa etapa é opcional." : "Cada arquétipo define uma direção visual, verbal e emocional para a identidade.",
         extra)}
-      <div class="carousel-wrap">
+      <div class="carousel-wrap" data-carousel-wrap>
         <div class="carousel" data-carousel>
           ${archetypes.map((a, i) => archetypeCard(a, i, mode)).join("")}
-        </div>
-        <div class="carousel-controls">
-          <button class="ghost-btn" data-prev type="button">Anterior</button>
-          <button class="ghost-btn" data-next type="button">Próximo</button>
         </div>
       </div>
     </section>
   `;
   const carousel = view.querySelector("[data-carousel]");
+  const carouselWrap = view.querySelector("[data-carousel-wrap]");
   updateCarouselCenter(carousel);
   carousel.addEventListener("scroll", () => requestAnimationFrame(() => updateCarouselCenter(carousel)));
-  view.querySelector("[data-prev]").addEventListener("click", () => carousel.scrollBy({ left: -360, behavior: "smooth" }));
-  view.querySelector("[data-next]").addEventListener("click", () => carousel.scrollBy({ left: 360, behavior: "smooth" }));
+  setupMouseGuidedCarousel(carouselWrap, carousel);
   view.querySelectorAll("[data-read]").forEach(btn => {
-    btn.addEventListener("click", () => openArchetypeModal(btn.dataset.read, mode));
+    btn.addEventListener("click", (event) => {
+      event.stopPropagation();
+      openArchetypeModal(btn.dataset.read, mode);
+    });
   });
+
+
+  view.querySelectorAll(".archetype-card:not(.is-disabled)").forEach(card => {
+    card.addEventListener("click", (event) => {
+      if (event.target.closest("button")) return;
+      updateCarouselCenter(carousel);
+      card.scrollIntoView({ behavior: "smooth", inline: "center", block: "nearest" });
+    });
+
+    card.addEventListener("dblclick", (event) => {
+      if (event.target.closest("button")) return;
+      selectArchetype(card.dataset.id, mode);
+    });
+  });
+
   const skip = view.querySelector("[data-skip-secondary]");
   if (skip) skip.addEventListener("click", () => {
     state.secondaryArchetype = null;
@@ -457,10 +471,30 @@ function archetypeCard(a, i, mode) {
         ${badge}
         <div class="card-footer">
           <button class="node-btn" data-read="${a.id}" type="button" ${disabled ? "disabled" : ""}>Ler mais</button>
+          <span class="double-click-hint">2 cliques para escolher</span>
         </div>
       </div>
     </article>
   `;
+}
+
+
+function selectArchetype(id, mode) {
+  if (getArchetypeDisabled(id, mode)) return;
+
+  if (mode === "primary") {
+    state.primaryArchetype = id;
+    state.secondaryArchetype = null;
+    resetAfterArchetypes();
+    saveState();
+    setStep("secondary-archetype");
+    return;
+  }
+
+  state.secondaryArchetype = id;
+  resetAfterArchetypes();
+  saveState();
+  setStep("heading-font");
 }
 
 function getArchetypeDisabled(id, mode) {
@@ -468,6 +502,59 @@ function getArchetypeDisabled(id, mode) {
   if (id === state.primaryArchetype) return "primary";
   const allowed = secondaryCompatibility[state.primaryArchetype] || [];
   return allowed.includes(id) ? null : "incompatible";
+}
+
+function setupMouseGuidedCarousel(wrap, carousel) {
+  if (!wrap || !carousel) return;
+
+  let raf = null;
+  let speed = 0;
+
+  const stop = () => {
+    speed = 0;
+    wrap.classList.remove("is-moving-left", "is-moving-right");
+    if (raf) {
+      cancelAnimationFrame(raf);
+      raf = null;
+    }
+  };
+
+  const tick = () => {
+    if (Math.abs(speed) < 0.1) {
+      stop();
+      return;
+    }
+
+    carousel.scrollLeft += speed;
+    updateCarouselCenter(carousel);
+    raf = requestAnimationFrame(tick);
+  };
+
+  wrap.addEventListener("mousemove", (event) => {
+    const rect = wrap.getBoundingClientRect();
+    const x = event.clientX - rect.left;
+    const ratio = x / rect.width;
+    const deadZone = 0.28;
+    const maxSpeed = 10;
+
+    if (ratio < 0.5 - deadZone) {
+      speed = -maxSpeed * ((0.5 - deadZone - ratio) / (0.5 - deadZone));
+      wrap.classList.add("is-moving-left");
+      wrap.classList.remove("is-moving-right");
+    } else if (ratio > 0.5 + deadZone) {
+      speed = maxSpeed * ((ratio - 0.5 - deadZone) / (0.5 - deadZone));
+      wrap.classList.add("is-moving-right");
+      wrap.classList.remove("is-moving-left");
+    } else {
+      stop();
+      return;
+    }
+
+    if (!raf) raf = requestAnimationFrame(tick);
+  });
+
+  wrap.addEventListener("mouseleave", stop);
+  wrap.addEventListener("touchstart", stop, { passive: true });
 }
 
 function updateCarouselCenter(carousel) {
@@ -518,18 +605,8 @@ function openArchetypeModal(id, mode) {
   `;
   root.querySelectorAll("[data-close-modal]").forEach(btn => btn.addEventListener("click", closeModal));
   root.querySelector("[data-use-archetype]").addEventListener("click", () => {
-    if (mode === "primary") {
-      state.primaryArchetype = id;
-      state.secondaryArchetype = null;
-      resetAfterArchetypes();
-      closeModal();
-      setStep("secondary-archetype");
-    } else {
-      state.secondaryArchetype = id;
-      resetAfterArchetypes();
-      closeModal();
-      setStep("heading-font");
-    }
+    closeModal();
+    selectArchetype(id, mode);
   });
 }
 
