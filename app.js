@@ -1,4 +1,5 @@
 const STORAGE_KEY = "brand-flow-state";
+const TOKEN_STORAGE_KEY = "brand-flow-token";
 
 const archetypes = [
   {
@@ -294,12 +295,27 @@ const defaultState = {
   secondaryArchetype: null,
   selectedHeadingFont: null,
   selectedBodyFont: null,
+  selectedDisplayFont: null,
+  selectedMonoFont: "IBM Plex Mono",
   selectedPrimaryColor: null,
   selectedSecondaryColor: null,
   selectedAccentColor: null,
   selectedBackgroundColor: null,
+  selectedSurfaceColor: null,
   selectedTextColor: null,
-  colors: { primary: null, secondary: null, accent: null, background: null, text: null },
+  selectedMutedColor: null,
+  selectedBorderColor: null,
+  colors: {
+    background: null,
+    surface: null,
+    primary: null,
+    secondary: null,
+    accent: null,
+    text: null,
+    muted: null,
+    border: null
+  },
+  brandKitToken: null,
   brandName: "NOVA",
   tagline: "Uma marca criada com direção, personalidade e presença.",
   ctaText: "Conhecer marca"
@@ -318,16 +334,43 @@ function loadState() {
   try {
     const raw = window.localStorage ? localStorage.getItem(STORAGE_KEY) : null;
     const saved = raw ? JSON.parse(raw) : null;
-    return saved ? { ...cloneData(defaultState), ...saved, colors: { ...defaultState.colors, ...(saved.colors || {}) } } : cloneData(defaultState);
+    if (!saved) return cloneData(defaultState);
+
+    const source = saved.state || saved;
+    return normalizeState({
+      ...cloneData(defaultState),
+      ...source,
+      colors: { ...defaultState.colors, ...(source.colors || {}) }
+    });
   } catch {
     return cloneData(defaultState);
   }
 }
 
+function normalizeState(nextState) {
+  const normalized = {
+    ...cloneData(defaultState),
+    ...nextState,
+    colors: { ...defaultState.colors, ...(nextState.colors || {}) }
+  };
+
+  normalized.selectedDisplayFont = normalized.selectedDisplayFont || normalized.selectedHeadingFont || null;
+  normalized.selectedMonoFont = normalized.selectedMonoFont || "IBM Plex Mono";
+  normalized.colors.surface = normalized.colors.surface || null;
+  normalized.colors.muted = normalized.colors.muted || null;
+  normalized.colors.border = normalized.colors.border || null;
+
+  return normalized;
+}
+
 function saveState() {
   try {
+    state = normalizeState(state);
+    state.brandKitToken = buildBrandKitToken();
+
     if (window.localStorage) {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+      localStorage.setItem(TOKEN_STORAGE_KEY, JSON.stringify(state.brandKitToken));
     }
   } catch {
     // O app continua funcionando mesmo quando o navegador bloqueia localStorage em arquivo local.
@@ -344,15 +387,95 @@ function getArchetype(id) {
   return archetypes.find(a => a.id === id);
 }
 
+function buildBrandKitToken() {
+  const colors = resolveTokenColors();
+  const primary = getArchetype(state.primaryArchetype);
+  const secondary = state.secondaryArchetype ? getArchetype(state.secondaryArchetype) : null;
+  const heading = state.selectedHeadingFont || "Playfair Display";
+  const body = state.selectedBodyFont || "Inter";
+
+  return {
+    archetype: {
+      primary: archetypeTokenName(primary),
+      secondary: secondary ? archetypeTokenName(secondary) : null,
+      mode: secondary ? "primary-secondary" : "primary-only"
+    },
+    typography: {
+      heading,
+      body,
+      display: state.selectedDisplayFont || heading,
+      mono: state.selectedMonoFont || "IBM Plex Mono"
+    },
+    colors,
+    contrastRules: {
+      normalText: "4.5:1 minimum",
+      largeText: "3:1 minimum",
+      colorOnlyWarning: true
+    }
+  };
+}
+
+function archetypeTokenName(archetype) {
+  if (!archetype) return null;
+
+  const names = {
+    innocent: "Innocent",
+    everyman: "Everyman",
+    hero: "Hero",
+    outlaw: "Outlaw",
+    explorer: "Explorer",
+    creator: "Creator",
+    ruler: "Ruler",
+    magician: "Magician",
+    lover: "Lover",
+    caregiver: "Caregiver",
+    jester: "Jester",
+    sage: "Sage"
+  };
+
+  return names[archetype.id] || archetype.name;
+}
+
+function resolveTokenColors() {
+  const background = state.colors.background || "#F8FAFC";
+  const primary = state.colors.primary || "#2563EB";
+  const secondary = state.colors.secondary || generateSecondaryFromPrimary(primary);
+  const accent = state.colors.accent || generateAccentFromPrimary(primary);
+  const text = state.colors.text || getReadableTextColor(background);
+
+  return {
+    background,
+    surface: state.colors.surface || generateSurfaceColor(background, primary),
+    primary,
+    secondary,
+    accent,
+    text,
+    muted: state.colors.muted || generateMutedColor(text, background),
+    border: state.colors.border || generateBorderColor(primary, background)
+  };
+}
+
+function syncDerivedTokenColors() {
+  const colors = resolveTokenColors();
+  state.colors = { ...state.colors, ...colors };
+}
+
 function applyBrandVars() {
   const root = document.documentElement;
-  root.style.setProperty("--brand-primary", state.colors.primary || "#2563EB");
-  root.style.setProperty("--brand-secondary", state.colors.secondary || "#64748B");
-  root.style.setProperty("--brand-accent", state.colors.accent || "#F59E0B");
-  root.style.setProperty("--brand-background", state.colors.background || "#F8FAFC");
-  root.style.setProperty("--brand-text", state.colors.text || "#0F172A");
-  root.style.setProperty("--brand-font-heading", `"${state.selectedHeadingFont || "Playfair Display"}", ${isSerif(state.selectedHeadingFont) ? "serif" : "sans-serif"}`);
-  root.style.setProperty("--brand-font-body", `"${state.selectedBodyFont || "Inter"}", ${isSerif(state.selectedBodyFont) ? "serif" : "sans-serif"}`);
+  const token = buildBrandKitToken();
+
+  root.style.setProperty("--brand-primary", token.colors.primary);
+  root.style.setProperty("--brand-secondary", token.colors.secondary);
+  root.style.setProperty("--brand-accent", token.colors.accent);
+  root.style.setProperty("--brand-background", token.colors.background);
+  root.style.setProperty("--brand-surface", token.colors.surface);
+  root.style.setProperty("--brand-text", token.colors.text);
+  root.style.setProperty("--brand-muted", token.colors.muted);
+  root.style.setProperty("--brand-border", token.colors.border);
+  root.style.setProperty("--brand-font-heading", `"${token.typography.heading}", ${isSerif(token.typography.heading) ? "serif" : "sans-serif"}`);
+  root.style.setProperty("--brand-font-body", `"${token.typography.body}", ${isSerif(token.typography.body) ? "serif" : "sans-serif"}`);
+  root.style.setProperty("--brand-font-display", `"${token.typography.display}", ${isSerif(token.typography.display) ? "serif" : "sans-serif"}`);
+  root.style.setProperty("--brand-font-mono", `"${token.typography.mono}", monospace`);
 }
 
 function isSerif(font) {
@@ -800,7 +923,10 @@ function selectPrimaryColor(color) {
   state.colors.secondary = null;
   state.colors.accent = null;
   state.colors.background = null;
+  state.colors.surface = null;
   state.colors.text = null;
+  state.colors.muted = null;
+  state.colors.border = null;
   saveState();
   setStep("linked-colors");
 }
@@ -839,6 +965,7 @@ function renderLinkedColors(view) {
     if (!state.colors.accent) state.colors.accent = groups.accent[0].hex;
     if (!state.colors.background) state.colors.background = groups.background[0].hex;
     if (!state.colors.text) state.colors.text = getReadableTextColor(state.colors.background);
+    syncDerivedTokenColors();
     saveState();
     setStep("brand-flow");
   });
@@ -1016,6 +1143,7 @@ function selectLinkedColor(role, color) {
   if (role === "background" && (!state.colors.text || getContrastRatio(state.colors.text, color.hex) < 4.5)) {
     state.colors.text = getReadableTextColor(color.hex);
   }
+  syncDerivedTokenColors();
   saveState();
   render();
 }
@@ -1086,9 +1214,9 @@ function renderFinalFlow(view) {
             <h3>Cores</h3>
             <p>Clique em qualquer cor no preview para usá-la como nova cor principal.</p>
             <div class="swatch-row">
-              ${Object.entries(state.colors).map(([k,v]) => `<button class="swatch-pill swatch-click" data-preview-color="${v}" data-preview-role="${k}" title="Usar ${v} como principal" style="background:${v}"><span>${k}</span></button>`).join("")}
+              ${Object.entries(buildBrandKitToken().colors).map(([k,v]) => `<button class="swatch-pill swatch-click" data-preview-color="${v}" data-preview-role="${k}" title="Usar ${v} como principal" style="background:${v}"><span>${colorRoleLabel(k)}</span></button>`).join("")}
             </div>
-            ${Object.entries(state.colors).map(([k,v]) => `<p><strong>${colorRoleLabel(k)}:</strong> <span class="hex">${v}</span></p>`).join("")}
+            ${Object.entries(buildBrandKitToken().colors).map(([k,v]) => `<p><strong>${colorRoleLabel(k)}:</strong> <span class="hex">${v}</span></p>`).join("")}
           </article>
         </div>
         <aside class="preview-panel">
@@ -1141,7 +1269,7 @@ function brandPreview(primary, secondary) {
         <h3>Post de marca</h3>
         <p>Uma amostra rápida de como a identidade pode aparecer em uma peça digital.</p>
         <div class="swatch-row preview-palette" aria-label="Cores clicáveis do preview">
-          ${Object.entries(state.colors).map(([role, value]) => `
+          ${Object.entries(buildBrandKitToken().colors).map(([role, value]) => `
             <button class="preview-color-chip" data-preview-color="${value}" data-preview-role="${role}" type="button" title="Usar ${value} como cor principal">
               <span class="swatch-pill" style="background:${value}"></span>
               <strong>${colorRoleLabel(role)}</strong>
@@ -1155,7 +1283,16 @@ function brandPreview(primary, secondary) {
 }
 
 function colorRoleLabel(role) {
-  return { primary: "Principal", secondary: "Secundária", accent: "Destaque", background: "Fundo", text: "Texto" }[role] || role;
+  return {
+    background: "Fundo",
+    surface: "Superfície",
+    primary: "Principal",
+    secondary: "Secundária",
+    accent: "Destaque",
+    text: "Texto",
+    muted: "Texto suave",
+    border: "Borda"
+  }[role] || role;
 }
 
 function shortenText(text, max = 120) {
@@ -1179,6 +1316,10 @@ function promotePreviewColor(hex, role) {
   state.colors.accent = chooseDifferentColor(groups.accent, hex, state.colors.accent);
   state.colors.background = chooseBackgroundColor(groups.background, hex);
   state.colors.text = getReadableTextColor(state.colors.background);
+  state.colors.surface = null;
+  state.colors.muted = null;
+  state.colors.border = null;
+  syncDerivedTokenColors();
   saveState();
   render();
 }
@@ -1194,6 +1335,41 @@ function chooseBackgroundColor(options, primaryHex) {
   return (readable || options[0]).hex;
 }
 
+function generateSurfaceColor(backgroundHex, primaryHex) {
+  const bg = hexToHsl(backgroundHex || "#F8FAFC");
+  const primary = hexToHsl(primaryHex || "#2563EB");
+
+  if (bg.l < 35) {
+    return hslToHex(primary.h, clamp(primary.s * 0.32, 10, 42), clamp(bg.l + 9, 12, 28));
+  }
+
+  return hslToHex(primary.h, clamp(primary.s * 0.24, 8, 34), clamp(bg.l - 5, 84, 96));
+}
+
+function generateMutedColor(textHex, backgroundHex) {
+  const text = hexToHsl(textHex || "#0F172A");
+  const bg = hexToHsl(backgroundHex || "#F8FAFC");
+  const targetLightness = bg.l < 45 ? 72 : 36;
+  return hslToHex(text.h, clamp(text.s * 0.42, 5, 30), targetLightness);
+}
+
+function generateBorderColor(primaryHex, backgroundHex) {
+  const primary = hexToHsl(primaryHex || "#2563EB");
+  const bg = hexToHsl(backgroundHex || "#F8FAFC");
+  const lightness = bg.l < 45 ? clamp(bg.l + 20, 28, 48) : clamp(bg.l - 16, 62, 82);
+  return hslToHex(primary.h, clamp(primary.s * 0.44, 12, 46), lightness);
+}
+
+function generateSecondaryFromPrimary(primaryHex) {
+  const hsl = hexToHsl(primaryHex || "#2563EB");
+  return hslToHex(rotateHue(hsl.h, 34), clamp(hsl.s * 0.74, 22, 70), clamp(hsl.l, 28, 58));
+}
+
+function generateAccentFromPrimary(primaryHex) {
+  const hsl = hexToHsl(primaryHex || "#2563EB");
+  return hslToHex(rotateHue(hsl.h, 152), clamp(hsl.s * 0.9, 42, 88), clamp(hsl.l + 4, 44, 62));
+}
+
 
 function escapeHtml(str) {
   return String(str).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
@@ -1204,6 +1380,7 @@ function escapeAttr(str) { return escapeHtml(str); }
 function resetApp() {
   try {
     localStorage.removeItem(STORAGE_KEY);
+    localStorage.removeItem(TOKEN_STORAGE_KEY);
   } catch {
     // Ignora bloqueios de localStorage em execução local.
   }
@@ -1231,4 +1408,7 @@ document.addEventListener("click", (event) => {
   }
 });
 
+state = normalizeState(state);
+syncDerivedTokenColors();
+saveState();
 render();
