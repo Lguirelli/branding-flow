@@ -362,7 +362,7 @@ function isSerif(font) {
 function render() {
   applyBrandVars();
   const header = document.querySelector("[data-app-header]");
-  header.hidden = state.currentStep === "intro";
+  if (header) header.hidden = state.currentStep === "intro";
   const view = document.getElementById("view");
   view.innerHTML = "";
 
@@ -417,7 +417,7 @@ function renderArchetypeStep(view, mode) {
         extra)}
       <div class="carousel-wrap" data-carousel-wrap>
         <div class="carousel" data-carousel>
-          ${archetypes.map((a, i) => archetypeCard(a, i, mode)).join("")}
+          ${getVisibleArchetypes(mode).map((a, i) => archetypeCard(a, i, mode)).join("")}
         </div>
       </div>
     </section>
@@ -456,6 +456,12 @@ function renderArchetypeStep(view, mode) {
   });
 }
 
+function getVisibleArchetypes(mode) {
+  if (mode !== "secondary") return archetypes;
+  const allowed = secondaryCompatibility[state.primaryArchetype] || [];
+  return archetypes.filter(a => allowed.includes(a.id));
+}
+
 function archetypeCard(a, i, mode) {
   const disabled = getArchetypeDisabled(a.id, mode);
   const badge = disabled === "primary" ? `<span class="card-badge">Arquétipo principal</span>` : disabled === "incompatible" ? `<span class="card-badge">Pouco compatível</span>` : "";
@@ -471,7 +477,6 @@ function archetypeCard(a, i, mode) {
         ${badge}
         <div class="card-footer">
           <button class="node-btn" data-read="${a.id}" type="button" ${disabled ? "disabled" : ""}>Ler mais</button>
-          <span class="double-click-hint">2 cliques para escolher</span>
         </div>
       </div>
     </article>
@@ -526,6 +531,13 @@ function setupMouseGuidedCarousel(wrap, carousel) {
     }
 
     carousel.scrollLeft += speed;
+
+    const maxScroll = carousel.scrollWidth - carousel.clientWidth;
+    if (maxScroll > 0) {
+      if (carousel.scrollLeft >= maxScroll - 4) carousel.scrollLeft = 4;
+      if (carousel.scrollLeft <= 2) carousel.scrollLeft = maxScroll - 6;
+    }
+
     updateCarouselCenter(carousel);
     raf = requestAnimationFrame(tick);
   };
@@ -633,55 +645,13 @@ function resetColors() {
   state.colors = { primary: null, secondary: null, accent: null, background: null, text: null };
 }
 
-
-function selectedArchetypeSummary() {
-  const primary = getArchetype(state.primaryArchetype);
-  const secondary = state.secondaryArchetype ? getArchetype(state.secondaryArchetype) : null;
-  return `${primary?.name || "Arquétipo"}${secondary ? " + " + secondary.name : ""}`;
-}
-
-function nodeConnectorSvg(type = "triple") {
-  if (type === "parallel") {
-    return `
-      <svg class="node-connector-svg parallel" viewBox="0 0 1200 420" preserveAspectRatio="none" aria-hidden="true">
-        <path d="M600 54 C460 126 300 150 170 240" />
-        <path d="M600 54 C540 132 470 170 430 240" />
-        <path d="M600 54 C660 132 730 170 770 240" />
-        <path d="M600 54 C740 126 900 150 1030 240" />
-      </svg>
-    `;
-  }
-  return `
-    <svg class="node-connector-svg triple" viewBox="0 0 1000 330" preserveAspectRatio="none" aria-hidden="true">
-      <path d="M500 58 C380 116 255 144 190 220" />
-      <path d="M500 58 C500 130 500 165 500 220" />
-      <path d="M500 58 C620 116 745 144 810 220" />
-    </svg>
-  `;
-}
-
-function workflowContextNode(title, value, caption = "") {
-  return `
-    <div class="workflow-context">
-      <span class="node-dot"></span>
-      <div>
-        <small>${title}</small>
-        <strong>${value}</strong>
-        ${caption ? `<em>${caption}</em>` : ""}
-      </div>
-    </div>
-  `;
-}
-
 function renderHeadingFont(view) {
   const options = getHeadingOptions();
   view.innerHTML = `
-    <section class="screen node-screen workflow-screen">
+    <section class="screen node-screen">
       ${screenHead("Escolha a fonte principal", "As sugestões combinam o arquétipo principal com a nuance do secundário.")}
-      <div class="flow-canvas node-workflow">
-        ${nodeConnectorSvg("triple")}
-        ${workflowContextNode("Direção de marca", selectedArchetypeSummary(), "base estratégica")}
-        <div class="node-grid node-route-grid">
+      <div class="flow-canvas">
+        <div class="node-grid">
           ${options.map(item => fontNode(item, "heading")).join("")}
         </div>
       </div>
@@ -697,6 +667,7 @@ function renderHeadingFont(view) {
     });
   });
 }
+
 function getHeadingOptions() {
   const primary = typographyByArchetype[state.primaryArchetype] || typographyByArchetype.sage;
   if (!state.secondaryArchetype) return primary;
@@ -709,29 +680,26 @@ function fontNode(item, role) {
   const selected = role === "heading" ? state.selectedHeadingFont === item.font : state.selectedBodyFont === item.font;
   const headingFont = role === "heading" ? item.font : state.selectedHeadingFont;
   const bodyFont = role === "heading" ? "Inter" : item.font;
-  const label = role === "heading" ? "Fonte principal" : "Fonte secundária";
   return `
-    <button class="option-node type-node ${selected ? "is-selected" : ""}" ${attr}="${item.font}" type="button">
-      <span class="node-kicker">${label}</span>
+    <article class="option-node ${selected ? "is-selected" : ""}">
       <h3 style="font-family:'${item.font}', ${isSerif(item.font) ? "serif" : "sans-serif"}">${item.font}</h3>
       <p>${item.feeling}</p>
-      <div class="sample-text compact">
+      <div class="sample-text">
         <span class="sample-title" style="font-family:'${headingFont}', ${isSerif(headingFont) ? "serif" : "sans-serif"}">Marca com presença</span>
-        <span class="sample-body" style="font-family:'${bodyFont}', ${isSerif(bodyFont) ? "serif" : "sans-serif"}">Clareza, ritmo e contraste.</span>
+        <span class="sample-body" style="font-family:'${bodyFont}', ${isSerif(bodyFont) ? "serif" : "sans-serif"}">Sistema visual com clareza, ritmo e contraste.</span>
       </div>
-      <span class="node-action">Selecionar</span>
-    </button>
+      <button class="node-btn" ${attr}="${item.font}" type="button">Selecionar</button>
+    </article>
   `;
 }
+
 function renderBodyFont(view) {
   const heading = getSelectedHeadingObject();
   view.innerHTML = `
-    <section class="screen node-screen workflow-screen">
+    <section class="screen node-screen">
       ${screenHead("Escolha a fonte secundária", `Fonte principal selecionada: ${state.selectedHeadingFont}. Agora escolha o par tipográfico.`)}
-      <div class="flow-canvas node-workflow">
-        ${nodeConnectorSvg("triple")}
-        ${workflowContextNode("Fonte principal", state.selectedHeadingFont, "node selecionado")}
-        <div class="node-grid node-route-grid">
+      <div class="flow-canvas">
+        <div class="node-grid">
           ${heading.pairings.map(item => fontNode(item, "body")).join("")}
         </div>
       </div>
@@ -746,6 +714,7 @@ function renderBodyFont(view) {
     });
   });
 }
+
 function getSelectedHeadingObject() {
   return getHeadingOptions().find(f => f.font === state.selectedHeadingFont) || getHeadingOptions()[0];
 }
@@ -753,12 +722,10 @@ function getSelectedHeadingObject() {
 function renderPrimaryColor(view) {
   const options = generatePrimaryColorOptions(state.primaryArchetype, state.secondaryArchetype, state.selectedHeadingFont, state.selectedBodyFont);
   view.innerHTML = `
-    <section class="screen node-screen workflow-screen">
+    <section class="screen node-screen">
       ${screenHead("Escolha a cor principal", "A cor principal define a força visual da marca. As opções consideram arquétipos e fontes escolhidas.")}
-      <div class="flow-canvas node-workflow">
-        ${nodeConnectorSvg("triple")}
-        ${workflowContextNode("Tipografia", `${state.selectedHeadingFont} + ${state.selectedBodyFont}`, "combinação escolhida")}
-        <div class="node-grid node-route-grid">
+      <div class="flow-canvas">
+        <div class="node-grid">
           ${options.map(color => primaryColorNode(color)).join("")}
         </div>
       </div>
@@ -771,6 +738,7 @@ function renderPrimaryColor(view) {
     });
   });
 }
+
 function generatePrimaryColorOptions(primaryArchetype, secondaryArchetype, headingFont, bodyFont) {
   const primary = baseColorOptions[primaryArchetype] || baseColorOptions.sage;
   if (!secondaryArchetype) return primary.map(c => ({ ...c, reason: "Baseada no arquétipo principal e ajustada ao par tipográfico escolhido." }));
@@ -784,18 +752,18 @@ function generatePrimaryColorOptions(primaryArchetype, secondaryArchetype, headi
 
 function primaryColorNode(c) {
   return `
-    <button class="option-node color-node" data-primary-color="${c.hex}" type="button">
-      <span class="node-kicker">Cor principal</span>
-      <span class="swatch node-swatch" style="background:${c.hex}"></span>
+    <article class="option-node">
+      <div class="swatch" style="background:${c.hex}"></div>
       <div class="color-meta">
         <h3>${c.name}</h3>
         <span class="hex">${c.hex}</span>
         <p>${c.meaning}. ${c.reason}</p>
       </div>
-      <span class="node-action">Usar cor</span>
-    </button>
+      <button class="node-btn" data-primary-color="${c.hex}" type="button">Usar cor</button>
+    </article>
   `;
 }
+
 function selectPrimaryColor(color) {
   state.selectedPrimaryColor = color;
   state.colors.primary = color.hex;
@@ -810,19 +778,21 @@ function selectPrimaryColor(color) {
 function renderLinkedColors(view) {
   const groups = generateLinkedColorOptions(state.selectedPrimaryColor, state.primaryArchetype, state.secondaryArchetype, state.selectedHeadingFont, state.selectedBodyFont);
   view.innerHTML = `
-    <section class="screen node-screen workflow-screen">
+    <section class="screen node-screen">
       ${screenHead("Escolha as cores complementares", "Os grupos ficam ligados à cor principal para criar um sistema visual coerente e com contraste.")}
-      <div class="flow-canvas node-workflow linked-color-workflow">
-        ${nodeConnectorSvg("parallel")}
-        <div class="workflow-context primary-color-context">
-          <span class="node-dot" style="background:${state.colors.primary}"></span>
-          <div>
-            <small>Cor principal</small>
-            <strong>${state.selectedPrimaryColor.name}</strong>
-            <em>${state.colors.primary}</em>
-          </div>
+      <div class="flow-canvas">
+        <svg class="flow-lines" viewBox="0 0 1200 500" preserveAspectRatio="none">
+          <path d="M600 40 C380 140 240 180 160 270" />
+          <path d="M600 40 C520 150 470 200 430 270" />
+          <path d="M600 40 C700 150 760 200 780 270" />
+          <path d="M600 40 C870 150 990 200 1040 270" />
+        </svg>
+        <div class="flow-node is-selected" style="max-width:420px;margin:0 auto 28px;text-align:center">
+          <div class="swatch" style="height:76px;background:${state.colors.primary}"></div>
+          <h3>${state.selectedPrimaryColor.name}</h3>
+          <span class="hex">${state.colors.primary}</span>
         </div>
-        <div class="parallel-groups node-parallel-groups">
+        <div class="parallel-groups">
           ${colorGroup("secondary", "Secundária", groups.secondary)}
           ${colorGroup("accent", "Destaque", groups.accent)}
           ${colorGroup("background", "Fundo", groups.background)}
@@ -849,6 +819,7 @@ function renderLinkedColors(view) {
     setStep("brand-flow");
   });
 }
+
 function generateLinkedColorOptions(primaryColor, primaryArchetype, secondaryArchetype, headingFont, bodyFont) {
   const hex = primaryColor.hex;
   const base = {
@@ -899,16 +870,15 @@ function generateLinkedColorOptions(primaryColor, primaryArchetype, secondaryArc
 function colorGroup(role, label, colors) {
   const bg = role === "text" ? (state.colors.background || "#F8FAFC") : null;
   return `
-    <section class="color-group node-color-group">
+    <section class="color-group">
       <h3>${label}</h3>
       ${colors.map(c => {
         const low = role === "text" && getContrastRatio(c.hex, bg) < 4.5;
         const selected = state.colors[role] === c.hex;
         return `
-          <button class="color-mini color-mini-node ${selected ? "is-selected" : ""} ${low ? "is-low" : ""}" data-color-role="${role}" data-color-hex="${c.hex}" data-color-name="${c.name}" data-low="${low}" type="button">
+          <button class="color-mini ${selected ? "is-selected" : ""} ${low ? "is-low" : ""}" data-color-role="${role}" data-color-hex="${c.hex}" data-color-name="${c.name}" data-low="${low}" type="button">
             <span class="mini-swatch" style="background:${c.hex}"></span>
-            <span class="node-kicker">${label}</span>
-            <strong>${c.name}</strong>
+            <strong>${c.name}</strong><br>
             <span class="hex">${c.hex}</span>
             <small>${c.reason}</small>
             ${low ? `<span class="low-badge">baixo contraste</span>` : ""}
@@ -918,6 +888,7 @@ function colorGroup(role, label, colors) {
     </section>
   `;
 }
+
 function selectLinkedColor(role, color) {
   state[`selected${capitalize(role)}Color`] = color;
   state.colors[role] = color.hex;
@@ -967,58 +938,36 @@ function renderFinalFlow(view) {
   const primary = getArchetype(state.primaryArchetype);
   const secondary = state.secondaryArchetype ? getArchetype(state.secondaryArchetype) : null;
   view.innerHTML = `
-    <section class="screen node-screen workflow-screen">
-      ${screenHead("Brand Flow", "Seu mini branding kit foi criado. Edite o preview, exporte o JSON ou reinicie o fluxo.")}
-      <div class="final-layout final-node-layout">
-        <div class="final-nodes final-node-map">
-          <svg class="final-connector-svg" viewBox="0 0 900 680" preserveAspectRatio="none" aria-hidden="true">
-            <path d="M170 110 C290 150 360 165 450 210" />
-            <path d="M730 110 C610 150 540 165 450 210" />
-            <path d="M170 390 C290 330 360 285 450 250" />
-            <path d="M730 390 C610 330 540 285 450 250" />
-            <path d="M450 250 C450 345 450 420 450 520" />
-          </svg>
-          <article class="flow-node final-node final-node-a">
-            <span class="node-kicker">Estratégia</span>
+    <section class="screen node-screen final-screen">
+      ${screenHead("Brand Board", "Edite o nome e o slogan diretamente no preview. Clique em uma cor para transformá-la na cor principal.")}
+      <div class="final-layout final-layout-clean">
+        <div class="final-nodes">
+          <article class="flow-node archetype-strategy-card">
             <h3>Archetype</h3>
             <p><strong>Principal:</strong> ${primary?.name || "Não definido"}</p>
+            <p>${shortenText(primary?.summary || "", 145)}</p>
             <p><strong>Secundário:</strong> ${secondary?.name || "Não definido"}</p>
+            ${secondary ? `<p>${shortenText(secondary.summary, 120)}</p>` : `<p>Sem secundário, a marca mantém uma personalidade mais direta e focada no arquétipo principal.</p>`}
+            <div class="strategy-blend">
+              <strong>Combinação:</strong> ${archetypeBlendText(primary, secondary)}
+            </div>
           </article>
-          <article class="flow-node final-node final-node-b">
-            <span class="node-kicker">Sistema verbal</span>
+          <article class="flow-node">
             <h3>Typography</h3>
             <p><strong>Título:</strong> ${state.selectedHeadingFont}</p>
             <p><strong>Texto:</strong> ${state.selectedBodyFont}</p>
-            <div class="sample-text compact">
+            <div class="sample-text">
               <span class="sample-title" style="font-family:'${state.selectedHeadingFont}'">Direção visual</span>
               <span class="sample-body" style="font-family:'${state.selectedBodyFont}'">Combinação tipográfica aplicada ao preview.</span>
             </div>
           </article>
-          <article class="flow-node final-node final-node-c">
-            <span class="node-kicker">Sistema cromático</span>
+          <article class="flow-node colors-summary-card">
             <h3>Colors</h3>
+            <p>Clique em qualquer cor no preview para usá-la como nova cor principal.</p>
             <div class="swatch-row">
-              ${Object.entries(state.colors).map(([k,v]) => `<span class="swatch-pill" title="${k}: ${v}" style="background:${v}"></span>`).join("")}
+              ${Object.entries(state.colors).map(([k,v]) => `<button class="swatch-pill swatch-click" data-preview-color="${v}" data-preview-role="${k}" title="Usar ${v} como principal" style="background:${v}"><span>${k}</span></button>`).join("")}
             </div>
-            ${Object.entries(state.colors).map(([k,v]) => `<p><strong>${k}:</strong> <span class="hex">${v}</span></p>`).join("")}
-          </article>
-          <article class="flow-node final-node final-node-d">
-            <span class="node-kicker">Saída</span>
-            <h3>Export</h3>
-            <p>Baixe o kit gerado em JSON ou volte para o início.</p>
-            <div class="card-footer">
-              <button class="node-btn" data-export type="button">Exportar JSON</button>
-              <button class="node-btn" data-reset type="button">Resetar</button>
-            </div>
-          </article>
-          <article class="flow-node final-node final-node-e">
-            <span class="node-kicker">Preview</span>
-            <h3>Editar marca</h3>
-            <div class="edit-fields">
-              <label>Nome da marca <input data-edit="brandName" value="${escapeAttr(state.brandName)}"></label>
-              <label>Tagline <input data-edit="tagline" value="${escapeAttr(state.tagline)}"></label>
-              <label>Texto do CTA <input data-edit="ctaText" value="${escapeAttr(state.ctaText)}"></label>
-            </div>
+            ${Object.entries(state.colors).map(([k,v]) => `<p><strong>${colorRoleLabel(k)}:</strong> <span class="hex">${v}</span></p>`).join("")}
           </article>
         </div>
         <aside class="preview-panel">
@@ -1027,56 +976,95 @@ function renderFinalFlow(view) {
       </div>
     </section>
   `;
-  view.querySelectorAll("[data-edit]").forEach(input => {
-    input.addEventListener("input", () => {
-      state[input.dataset.edit] = input.value;
+
+  view.querySelectorAll("[data-preview-edit]").forEach(el => {
+    el.addEventListener("input", () => {
+      const key = el.dataset.previewEdit;
+      state[key] = el.textContent.trim();
       saveState();
-      render();
     });
   });
+
+  view.querySelectorAll("[data-preview-color]").forEach(btn => {
+    btn.addEventListener("click", () => promotePreviewColor(btn.dataset.previewColor, btn.dataset.previewRole));
+  });
+
   bindGlobal();
 }
+
+
 function brandPreview(primary, secondary) {
   return `
-    <div class="brand-preview">
+    <div class="brand-preview brand-board-preview">
       <div class="preview-hero">
         <span class="preview-badge">${primary?.name || "Arquétipo"}${secondary ? " + " + secondary.name : ""}</span>
-        <h2>${escapeHtml(state.brandName)}</h2>
-        <p>${escapeHtml(state.tagline)}</p>
-        <span class="preview-cta">${escapeHtml(state.ctaText)}</span>
+        <h2 contenteditable="true" spellcheck="false" data-preview-edit="brandName">${escapeHtml(state.brandName)}</h2>
+        <p contenteditable="true" spellcheck="false" data-preview-edit="tagline">${escapeHtml(state.tagline)}</p>
+        <span class="preview-cta" contenteditable="true" spellcheck="false" data-preview-edit="ctaText">${escapeHtml(state.ctaText)}</span>
       </div>
       <div class="preview-social">
         <h3>Post de marca</h3>
         <p>Uma amostra rápida de como a identidade pode aparecer em uma peça digital.</p>
-        <div class="swatch-row">
-          ${Object.values(state.colors).map(v => `<span class="swatch-pill" style="background:${v}"></span>`).join("")}
+        <div class="swatch-row preview-palette" aria-label="Cores clicáveis do preview">
+          ${Object.entries(state.colors).map(([role, value]) => `
+            <button class="preview-color-chip" data-preview-color="${value}" data-preview-role="${role}" type="button" title="Usar ${value} como cor principal">
+              <span class="swatch-pill" style="background:${value}"></span>
+              <strong>${colorRoleLabel(role)}</strong>
+              <em>${value}</em>
+            </button>
+          `).join("")}
         </div>
       </div>
     </div>
   `;
 }
 
+function colorRoleLabel(role) {
+  return { primary: "Principal", secondary: "Secundária", accent: "Destaque", background: "Fundo", text: "Texto" }[role] || role;
+}
+
+function shortenText(text, max = 120) {
+  const clean = String(text || "").trim();
+  if (clean.length <= max) return clean;
+  return clean.slice(0, max).trim() + "...";
+}
+
+function archetypeBlendText(primary, secondary) {
+  if (!primary && !secondary) return "A combinação ainda não foi definida.";
+  if (!secondary) return `A marca tende a comunicar ${primary.name.toLowerCase()} de forma mais pura: ${primary.keywords.join(", ")}.`;
+  return `Une ${primary.name} com ${secondary.name}: a base estratégica vem de ${primary.keywords[0]}, enquanto a nuance secundária adiciona ${secondary.keywords[0]}. O resultado é uma marca com personalidade mais rica, direção verbal mais clara e visual mais coerente.`;
+}
+
+function promotePreviewColor(hex, role) {
+  const promoted = { name: `Cor ${colorRoleLabel(role)}`, hex, meaning: "cor promovida a principal pelo preview" };
+  state.selectedPrimaryColor = promoted;
+  state.colors.primary = hex;
+  const groups = generateLinkedColorOptions(promoted, state.primaryArchetype, state.secondaryArchetype, state.selectedHeadingFont, state.selectedBodyFont);
+  state.colors.secondary = chooseDifferentColor(groups.secondary, hex, state.colors.secondary);
+  state.colors.accent = chooseDifferentColor(groups.accent, hex, state.colors.accent);
+  state.colors.background = chooseBackgroundColor(groups.background, hex);
+  state.colors.text = getReadableTextColor(state.colors.background);
+  saveState();
+  render();
+}
+
+function chooseDifferentColor(options, primaryHex, currentHex) {
+  const current = options.find(c => c.hex === currentHex && c.hex !== primaryHex);
+  if (current) return current.hex;
+  return (options.find(c => c.hex !== primaryHex) || options[0]).hex;
+}
+
+function chooseBackgroundColor(options, primaryHex) {
+  const readable = options.find(c => c.hex !== primaryHex && getContrastRatio(getReadableTextColor(c.hex), c.hex) >= 4.5);
+  return (readable || options[0]).hex;
+}
+
+
 function escapeHtml(str) {
   return String(str).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
 }
 function escapeAttr(str) { return escapeHtml(str); }
 
-function exportJSON() {
-  const data = {
-    brandName: state.brandName,
-    tagline: state.tagline,
-    ctaText: state.ctaText,
-    archetypes: { primary: state.primaryArchetype, secondary: state.secondaryArchetype },
-    typography: { heading: state.selectedHeadingFont, body: state.selectedBodyFont },
-    colors: state.colors
-  };
-  const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
-  const a = document.createElement("a");
-  a.href = URL.createObjectURL(blob);
-  a.download = "brand-flow-kit.json";
-  a.click();
-  URL.revokeObjectURL(a.href);
-}
 
 function resetApp() {
   try {
@@ -1089,9 +1077,15 @@ function resetApp() {
 }
 
 function bindGlobal() {
-  document.querySelectorAll("[data-export]").forEach(btn => btn.onclick = exportJSON);
   document.querySelectorAll("[data-reset]").forEach(btn => btn.onclick = resetApp);
-  document.querySelectorAll("[data-go-intro]").forEach(btn => btn.onclick = () => setStep("intro"));
+  document.querySelectorAll("[data-go-back]").forEach(btn => btn.onclick = goBackStep);
+}
+
+function goBackStep() {
+  const order = ["intro", "primary-archetype", "secondary-archetype", "heading-font", "body-font", "primary-color", "linked-colors", "brand-flow"];
+  const index = order.indexOf(state.currentStep);
+  if (index <= 0) return setStep("intro");
+  setStep(order[index - 1]);
 }
 
 document.addEventListener("click", (event) => {

@@ -17,15 +17,9 @@
     <div class="ambient ambient-a"></div>
     <div class="ambient ambient-b"></div>
 
-    <header class="app-header" data-app-header hidden>
-      <button class="brand-mark" data-go-intro type="button" aria-label="Voltar para início">
-        <span class="brand-mark-dot"></span>
-        Brand Flow
-      </button>
-      <div class="header-actions">
-        <button class="ghost-btn" data-reset type="button">Resetar</button>
-        <button class="primary-btn small" data-export type="button">Exportar JSON</button>
-      </div>
+    <header class="floating-nav" data-app-header hidden aria-label="Navegação">
+      <button class="nav-action" data-go-back type="button">Voltar</button>
+      <button class="nav-action nav-action-reset" data-reset type="button">Resetar</button>
     </header>
 
     <main id="view" class="view"></main>
