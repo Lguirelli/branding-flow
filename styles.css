@@ -1522,23 +1522,6 @@ body::before {
   user-select: none;
 }
 
-.option-node::after,
-.color-mini::after {
-  content: "duplo clique";
-  display: inline-flex;
-  width: fit-content;
-  margin-top: 14px;
-  padding: 4px 9px;
-  border: 2px solid var(--app-black);
-  border-radius: 999px;
-  background: var(--app-yellow-soft);
-  color: var(--app-black);
-  font-family: var(--app-font-ui);
-  font-size: .64rem;
-  font-weight: 900;
-  letter-spacing: .06em;
-  text-transform: uppercase;
-}
 
 .option-node:focus-visible,
 .color-mini:focus-visible,
@@ -1557,5 +1540,63 @@ body::before {
     min-height: 430px;
     padding-left: calc(50% - min(150px, 42vw)) !important;
     padding-right: calc(50% - min(150px, 42vw)) !important;
+  }
+}
+
+
+/* Correção final: preview primeiro e boxes informativos abaixo, com layout em português */
+.final-screen .final-layout,
+.final-screen .final-layout-clean {
+  width: min(1180px, calc(100vw - 32px)) !important;
+  margin: 0 auto !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: flex-start !important;
+  gap: 26px !important;
+  grid-template-columns: none !important;
+}
+
+.final-screen .preview-panel,
+.final-layout-clean .preview-panel {
+  order: 1 !important;
+  width: min(880px, 100%) !important;
+  margin: 0 auto !important;
+  position: static !important;
+  align-self: center !important;
+}
+
+.final-screen .brand-preview,
+.final-screen .brand-board-preview {
+  width: 100% !important;
+}
+
+.final-screen .final-nodes,
+.final-layout-clean .final-nodes {
+  order: 2 !important;
+  width: min(1040px, 100%) !important;
+  margin: 0 auto !important;
+  display: grid !important;
+  grid-template-columns: repeat(3, minmax(220px, 1fr)) !important;
+  gap: 18px !important;
+  align-items: stretch !important;
+}
+
+.final-screen .final-nodes .flow-node {
+  min-height: auto !important;
+  height: auto !important;
+  overflow: visible !important;
+}
+
+.final-screen .final-nodes .flow-node h3 {
+  font-family: var(--app-font-display) !important;
+  text-transform: uppercase !important;
+  letter-spacing: .045em !important;
+}
+
+@media (max-width: 920px) {
+  .final-screen .final-nodes,
+  .final-layout-clean .final-nodes {
+    grid-template-columns: 1fr !important;
   }
 }
