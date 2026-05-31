@@ -22,6 +22,12 @@
 }
 
 * { box-sizing: border-box; }
+/* Fix: garante que elementos com atributo hidden fiquem realmente ocultos,
+   mesmo quando classes como .modal-backdrop, .topbar ou .screen definem display. */
+[hidden] {
+  display: none !important;
+}
+
 html { scroll-behavior: smooth; }
 body {
   margin: 0;
