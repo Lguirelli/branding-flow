@@ -933,14 +933,14 @@ function selectPrimaryColor(color) {
 
 function renderLinkedColors(view) {
   const groups = generateLinkedColorOptions(state.selectedPrimaryColor, state.primaryArchetype, state.secondaryArchetype, state.selectedHeadingFont, state.selectedBodyFont);
+  const canFinish = linkedColorRoles.every(role => Boolean(state.colors[role]));
   view.innerHTML = `
     <section class="screen node-screen linked-colors-screen">
-      ${screenHead("Escolha as cores complementares", "As opções abaixo são geradas dinamicamente a partir da cor principal escolhida, mantendo contraste, coerência e equilíbrio visual.")}
+      ${screenHead("Escolha as cores complementares", "Siga a ordem das colunas: Secundária, Destaque, Fundo e Texto. Cada coluna libera a próxima.")}
       <div class="flow-canvas color-system-canvas">
         <div class="flow-node is-selected primary-color-anchor" style="--anchor-color:${state.colors.primary}">
           <div class="swatch" style="height:76px;background:${state.colors.primary}"></div>
-          <h3>${state.selectedPrimaryColor.name}</h3>
-          <span class="hex">${state.colors.primary}</span>
+          <div class="color-title-line"><h3>${state.selectedPrimaryColor.name}</h3><span class="hex">${state.colors.primary}</span></div>
         </div>
         <div class="parallel-groups color-linked-groups">
           ${colorGroup("secondary", "Secundária", groups.secondary)}
@@ -949,7 +949,7 @@ function renderLinkedColors(view) {
           ${colorGroup("text", "Texto", groups.text)}
         </div>
         <div class="step-actions">
-          <button class="primary-btn small" data-finish-colors type="button">Finalizar Brand Flow</button>
+          <button class="primary-btn small" data-finish-colors type="button" ${canFinish ? "" : "disabled"}>Finalizar Brand Flow</button>
         </div>
       </div>
     </section>
@@ -957,14 +957,12 @@ function renderLinkedColors(view) {
   view.querySelectorAll("[data-color-role]").forEach(card => {
     card.addEventListener("click", () => {
       if (card.dataset.low === "true") return;
+      if (card.dataset.locked === "true") return;
       selectLinkedColor(card.dataset.colorRole, { name: card.dataset.colorName, hex: card.dataset.colorHex });
     });
   });
   view.querySelector("[data-finish-colors]").addEventListener("click", () => {
-    if (!state.colors.secondary) state.colors.secondary = groups.secondary[0].hex;
-    if (!state.colors.accent) state.colors.accent = groups.accent[0].hex;
-    if (!state.colors.background) state.colors.background = groups.background[0].hex;
-    if (!state.colors.text) state.colors.text = getReadableTextColor(state.colors.background);
+    if (!linkedColorRoles.every(role => Boolean(state.colors[role]))) return;
     syncDerivedTokenColors();
     saveState();
     setStep("brand-flow");
@@ -1115,16 +1113,28 @@ function dedupeColors(colors) {
   });
 }
 
+const linkedColorRoles = ["secondary", "accent", "background", "text"];
+
+function isLinkedColorRoleUnlocked(role) {
+  const index = linkedColorRoles.indexOf(role);
+  if (index <= 0) return true;
+  return linkedColorRoles.slice(0, index).every(previousRole => Boolean(state.colors[previousRole]));
+}
+
 function colorGroup(role, label, colors) {
   const bg = role === "text" ? (state.colors.background || "#F8FAFC") : null;
+  const locked = !isLinkedColorRoleUnlocked(role);
+  const previous = linkedColorRoles[linkedColorRoles.indexOf(role) - 1];
+  const hint = locked ? `Selecione ${roleLabel(previous)} primeiro.` : "Selecione uma opção.";
   return `
-    <section class="color-group">
+    <section class="color-group ${locked ? "is-locked" : "is-unlocked"}" data-color-group="${role}">
       <h3>${label}</h3>
+      <p class="color-group-hint">${hint}</p>
       ${colors.map(c => {
         const low = role === "text" && getContrastRatio(c.hex, bg) < 4.5;
         const selected = state.colors[role] === c.hex;
         return `
-          <article class="color-mini ${selected ? "is-selected" : ""} ${low ? "is-low" : ""}" data-color-role="${role}" data-color-hex="${c.hex}" data-color-name="${c.name}" data-low="${low}" tabindex="0" role="button">
+          <article class="color-mini ${selected ? "is-selected" : ""} ${low ? "is-low" : ""} ${locked ? "is-locked" : ""}" data-color-role="${role}" data-color-hex="${c.hex}" data-color-name="${c.name}" data-low="${low}" data-locked="${locked}" tabindex="0" role="button" aria-disabled="${locked || low}">
             <span class="mini-swatch" style="background:${c.hex}"></span>
             <strong>${c.name}</strong><br>
             <span class="hex">${c.hex}</span>
@@ -1137,11 +1147,32 @@ function colorGroup(role, label, colors) {
   `;
 }
 
+function roleLabel(role) {
+  const labels = { secondary: "a cor secundária", accent: "a cor de destaque", background: "o fundo", text: "o texto" };
+  return labels[role] || "a etapa anterior";
+}
+
+function clearLinkedColorsAfter(role) {
+  const index = linkedColorRoles.indexOf(role);
+  linkedColorRoles.slice(index + 1).forEach(nextRole => {
+    state.colors[nextRole] = null;
+    state[`selected${capitalize(nextRole)}Color`] = null;
+  });
+  if (["secondary", "accent", "background"].includes(role)) {
+    state.colors.surface = null;
+    state.colors.muted = null;
+    state.colors.border = null;
+  }
+}
+
 function selectLinkedColor(role, color) {
+  if (!isLinkedColorRoleUnlocked(role)) return;
   state[`selected${capitalize(role)}Color`] = color;
   state.colors[role] = color.hex;
-  if (role === "background" && (!state.colors.text || getContrastRatio(state.colors.text, color.hex) < 4.5)) {
-    state.colors.text = getReadableTextColor(color.hex);
+  clearLinkedColorsAfter(role);
+  if (role === "background") {
+    state.colors.text = null;
+    state.selectedTextColor = null;
   }
   syncDerivedTokenColors();
   saveState();
