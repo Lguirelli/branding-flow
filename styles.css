@@ -1397,3 +1397,98 @@ body::before {
   background: var(--app-yellow);
   box-shadow: 4px 4px 0 var(--app-black);
 }
+
+/* Ajuste solicitado: preview acima; cards de resumo abaixo */
+.final-layout-clean {
+  width: min(1180px, 100%);
+  grid-template-columns: 1fr !important;
+  align-items: stretch;
+  gap: 24px;
+}
+
+.final-layout-clean .preview-panel {
+  order: 1;
+  position: static !important;
+  width: min(820px, 100%);
+  margin: 0 auto;
+}
+
+.final-layout-clean .final-nodes {
+  order: 2;
+  width: min(1180px, 100%);
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 18px;
+  align-items: stretch;
+}
+
+.final-layout-clean .flow-node h3 {
+  font-family: var(--app-font-display);
+  text-transform: uppercase;
+  letter-spacing: .045em;
+}
+
+.preview-edit-block {
+  margin-top: 18px;
+}
+
+.preview-field-label {
+  display: inline-flex;
+  margin-bottom: 8px;
+  padding: 5px 9px;
+  border: 2px solid currentColor;
+  border-radius: 999px;
+  font-family: var(--brand-font-body);
+  font-size: .68rem;
+  font-weight: 900;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: var(--brand-text);
+  opacity: .86;
+}
+
+.preview-edit-block h2 {
+  margin-top: 0 !important;
+}
+
+.preview-edit-block p {
+  margin-top: 0 !important;
+}
+
+.preview-paragraph-test {
+  width: min(520px, 100%);
+  margin-top: 22px;
+  padding: 16px 18px;
+  border: 2px solid color-mix(in srgb, var(--brand-text) 58%, transparent);
+  border-radius: 18px;
+  background: color-mix(in srgb, var(--brand-background) 76%, var(--brand-primary));
+  color: var(--brand-text);
+  font-family: var(--brand-font-body);
+  box-shadow: 5px 5px 0 color-mix(in srgb, var(--brand-text) 76%, transparent);
+}
+
+.preview-paragraph-test span {
+  display: block;
+  margin-bottom: 8px;
+  font-size: .7rem;
+  font-weight: 900;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  opacity: .72;
+}
+
+.preview-paragraph-test p {
+  margin: 0;
+  max-width: none;
+  font-family: var(--brand-font-body);
+  font-size: .95rem;
+  line-height: 1.68;
+  opacity: .92;
+}
+
+@media (max-width: 960px) {
+  .final-layout-clean .final-nodes {
+    grid-template-columns: 1fr;
+  }
+}

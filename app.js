@@ -1023,7 +1023,7 @@ function renderFinalFlow(view) {
       <div class="final-layout final-layout-clean">
         <div class="final-nodes">
           <article class="flow-node archetype-strategy-card">
-            <h3>Archetype</h3>
+            <h3>Arquétipos</h3>
             <p><strong>Principal:</strong> ${primary?.name || "Não definido"}</p>
             <p>${shortenText(primary?.summary || "", 145)}</p>
             <p><strong>Secundário:</strong> ${secondary?.name || "Não definido"}</p>
@@ -1033,7 +1033,7 @@ function renderFinalFlow(view) {
             </div>
           </article>
           <article class="flow-node">
-            <h3>Typography</h3>
+            <h3>Tipografia</h3>
             <p><strong>Título:</strong> ${state.selectedHeadingFont}</p>
             <p><strong>Texto:</strong> ${state.selectedBodyFont}</p>
             <div class="sample-text">
@@ -1042,7 +1042,7 @@ function renderFinalFlow(view) {
             </div>
           </article>
           <article class="flow-node colors-summary-card">
-            <h3>Colors</h3>
+            <h3>Cores</h3>
             <p>Clique em qualquer cor no preview para usá-la como nova cor principal.</p>
             <div class="swatch-row">
               ${Object.entries(state.colors).map(([k,v]) => `<button class="swatch-pill swatch-click" data-preview-color="${v}" data-preview-role="${k}" title="Usar ${v} como principal" style="background:${v}"><span>${k}</span></button>`).join("")}
@@ -1078,8 +1078,22 @@ function brandPreview(primary, secondary) {
     <div class="brand-preview brand-board-preview">
       <div class="preview-hero">
         <span class="preview-badge">${primary?.name || "Arquétipo"}${secondary ? " + " + secondary.name : ""}</span>
-        <h2 contenteditable="true" spellcheck="false" data-preview-edit="brandName">${escapeHtml(state.brandName)}</h2>
-        <p contenteditable="true" spellcheck="false" data-preview-edit="tagline">${escapeHtml(state.tagline)}</p>
+
+        <div class="preview-edit-block">
+          <span class="preview-field-label">Nome da marca</span>
+          <h2 contenteditable="true" spellcheck="false" data-preview-edit="brandName">${escapeHtml(state.brandName)}</h2>
+        </div>
+
+        <div class="preview-edit-block">
+          <span class="preview-field-label">Slogan</span>
+          <p contenteditable="true" spellcheck="false" data-preview-edit="tagline">${escapeHtml(state.tagline)}</p>
+        </div>
+
+        <div class="preview-paragraph-test">
+          <span>Teste de parágrafo</span>
+          <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer posuere, justo vel direção visual, testa contraste, peso tipográfico e leitura em textos longos.</p>
+        </div>
+
         <span class="preview-cta" contenteditable="true" spellcheck="false" data-preview-edit="ctaText">${escapeHtml(state.ctaText)}</span>
       </div>
       <div class="preview-social">
