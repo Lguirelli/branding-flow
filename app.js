@@ -3,7 +3,7 @@ const root = $('#screenRoot');
 const modal = $('#modal');
 const modalContent = $('#modalContent');
 
-const STORAGE_KEY = 'brand-flow-final-state-v1';
+const STORAGE_KEY = 'brand-flow-final-state-v4';
 
 const archetypes = {
   innocent: { name: 'Inocente', desc: 'Simplicidade, otimismo e confiança para marcas leves e transparentes.', keys: ['leveza','otimismo','clareza'], voice: 'simples, positiva e direta', visual: 'claro, limpo, amplo e amigável', colors: ['amarelos suaves','azuis claros','bege','branco'], fonts: ['Nunito','Quicksand','DM Sans'] },
@@ -170,7 +170,7 @@ function renderIntro(){
       <h1 class="intro-title">Brand Flow</h1>
       <p class="intro-lead">Crie um mini branding kit visual em poucos passos.</p>
       <p class="intro-copy">Escolha a personalidade da marca, combine fontes do Google Fonts e construa um sistema visual coerente em um fluxo de nodes.</p>
-      <div class="intro-actions"><button class="primary-btn" type="button" data-start>Começar</button></div>
+      <div class="intro-actions"><button class="primary-btn" type="button" id="startBtn" data-action="start" data-start>Começar</button></div>
     </div>`;
   s.querySelector('[data-start]').addEventListener('click', () => setStep('primary'));
   return s;
@@ -515,11 +515,29 @@ function exportJson(){
   URL.revokeObjectURL(url);
 }
 
+
+function handleGlobalClick(event) {
+  const actionEl = event.target.closest('[data-action]');
+  if (!actionEl) return;
+
+  const action = actionEl.dataset.action;
+
+  if (action === 'start') {
+    event.preventDefault();
+    event.stopPropagation();
+    setStep('primary');
+    return;
+  }
+}
+
+document.addEventListener('click', handleGlobalClick, true);
+
 $('#modalClose').addEventListener('click', closeModal);
 modal.addEventListener('click', (e) => { if (e.target === modal) closeModal(); });
 $('#resetBtn').addEventListener('click', reset);
 $('#backBtn').addEventListener('click', goBack);
 $('#exportBtn').addEventListener('click', exportJson);
 
+window.BrandFlowStart = () => setStep('primary');
 closeModal();
 render();
