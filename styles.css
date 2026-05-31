@@ -1152,3 +1152,644 @@ button { border: 0; }
   }
   .final-node-e:hover { transform: translateY(-5px) scale(1.015); }
 }
+
+/* =========================================================
+   BRAND FLOW — EDITORIAL / ZINE VISUAL PATCH
+   Substitui neon/glass por visual impresso, halftone e blocos gráficos.
+   Mantém a paleta Sunflower Fields e preserva as variáveis --brand-* no preview.
+   ========================================================= */
+
+:root {
+  --print-border: 3px solid var(--app-black);
+  --print-border-thick: 5px solid var(--app-black);
+  --print-shadow: 8px 8px 0 var(--app-black);
+  --print-shadow-lg: 14px 14px 0 var(--app-black);
+  --print-radius: 24px;
+  --print-radius-lg: 34px;
+  --paper: var(--app-light);
+  --ink: var(--app-black);
+}
+
+html,
+body {
+  background: var(--app-black);
+}
+
+body {
+  color: var(--app-light);
+  background:
+    radial-gradient(circle at 18% 18%, rgba(255, 238, 50, .08), transparent 26%),
+    radial-gradient(circle at 86% 78%, rgba(214, 214, 214, .05), transparent 30%),
+    linear-gradient(135deg, #151515 0%, var(--app-black) 46%, var(--app-graphite) 100%);
+}
+
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  pointer-events: none;
+  opacity: .17;
+  mix-blend-mode: overlay;
+  background-image:
+    radial-gradient(rgba(214,214,214,.35) .9px, transparent .9px),
+    linear-gradient(45deg, rgba(255,255,255,.025) 25%, transparent 25%, transparent 50%, rgba(255,255,255,.025) 50%, rgba(255,255,255,.025) 75%, transparent 75%);
+  background-size: 4px 4px, 9px 9px;
+}
+
+body::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 9998;
+  pointer-events: none;
+  opacity: .09;
+  background:
+    radial-gradient(circle at 18% 16%, var(--app-yellow) 0 2px, transparent 2px 100%),
+    radial-gradient(circle at 19.6% 18.1%, var(--app-yellow) 0 1.4px, transparent 1.4px 100%),
+    radial-gradient(circle at 82% 68%, var(--app-light) 0 1.4px, transparent 1.4px 100%);
+  background-size: 18px 18px, 15px 15px, 12px 12px;
+}
+
+.ambient {
+  display: none;
+}
+
+.app-header {
+  border: var(--print-border);
+  border-radius: 999px;
+  background: var(--app-light);
+  color: var(--app-black);
+  backdrop-filter: none;
+  box-shadow: var(--print-shadow);
+}
+
+.brand-mark {
+  color: var(--app-black);
+  text-transform: uppercase;
+  letter-spacing: -.03em;
+}
+
+.brand-mark-dot {
+  border: 2px solid var(--app-black);
+  background: var(--app-yellow);
+  box-shadow: none;
+}
+
+.screen {
+  position: relative;
+}
+
+.screen-title,
+.flow-title,
+.intro-content h1 {
+  color: var(--app-light);
+  text-transform: uppercase;
+  text-shadow: none;
+}
+
+.screen-subtitle,
+.intro-copy {
+  color: rgba(214, 214, 214, .78);
+}
+
+.kicker {
+  color: var(--app-yellow);
+  text-transform: uppercase;
+}
+
+.intro-content {
+  background: var(--app-light);
+  color: var(--app-black);
+  border: var(--print-border-thick);
+  border-radius: 38px;
+  backdrop-filter: none;
+  box-shadow: var(--print-shadow-lg);
+  overflow: hidden;
+}
+
+.intro-content::before,
+.intro-content::after {
+  content: "✦";
+  position: absolute;
+  width: 96px;
+  height: 96px;
+  display: grid;
+  place-items: center;
+  border: var(--print-border);
+  border-radius: 999px;
+  background: var(--app-yellow);
+  color: var(--app-black);
+  font-family: var(--app-font-display);
+  font-size: 3.4rem;
+  line-height: 1;
+  box-shadow: 6px 6px 0 var(--app-black);
+}
+
+.intro-content::before {
+  left: -28px;
+  top: -24px;
+  transform: rotate(-12deg);
+}
+
+.intro-content::after {
+  content: "×";
+  right: -22px;
+  bottom: -26px;
+  transform: rotate(10deg);
+}
+
+.intro-content h1 {
+  color: var(--app-black);
+  text-shadow: none;
+}
+
+.intro-lead {
+  color: var(--app-black);
+  text-transform: uppercase;
+}
+
+.intro-copy {
+  color: rgba(32, 32, 32, .72);
+}
+
+.intro-bg-flow {
+  opacity: .24;
+}
+
+.intro-node {
+  border: var(--print-border);
+  border-radius: 999px;
+  background: var(--app-yellow);
+  color: var(--app-black);
+  box-shadow: 6px 6px 0 var(--app-black);
+  text-transform: uppercase;
+}
+
+.intro-lines path,
+.flow-lines path,
+.node-connector-svg path,
+.final-connector-svg path {
+  stroke: var(--app-yellow) !important;
+  stroke-width: 5 !important;
+  stroke-linecap: square;
+  filter: none !important;
+  opacity: 1;
+}
+
+.primary-btn,
+.ghost-btn,
+.node-btn,
+.modal-close,
+button:not(.color-mini):not(.brand-mark) {
+  border: 2px solid var(--app-black);
+  border-radius: 999px;
+  background: var(--app-yellow);
+  color: var(--app-black);
+  box-shadow: 4px 4px 0 var(--app-black);
+  text-transform: uppercase;
+  letter-spacing: .02em;
+  font-weight: 900;
+}
+
+.primary-btn:hover,
+.ghost-btn:hover,
+.node-btn:hover,
+.modal-close:hover,
+button:not(.color-mini):not(.brand-mark):hover {
+  transform: translate(-2px, -2px);
+  box-shadow: 6px 6px 0 var(--app-black);
+  color: var(--app-black);
+}
+
+.primary-btn.small,
+.ghost-btn {
+  margin: 0;
+}
+
+/* Carrossel como cartas impressas */
+.carousel-wrap::before,
+.carousel-wrap::after {
+  opacity: .78;
+}
+
+.carousel-wrap::before {
+  background: linear-gradient(90deg, rgba(32,32,32,.96), transparent);
+}
+
+.carousel-wrap::after {
+  background: linear-gradient(270deg, rgba(32,32,32,.96), transparent);
+}
+
+.archetype-card {
+  border: var(--print-border);
+  border-radius: 28px;
+  background: var(--app-light);
+  color: var(--app-black);
+  box-shadow: var(--print-shadow);
+  opacity: .64;
+  filter: saturate(.9) contrast(.98);
+}
+
+.archetype-card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  opacity: .24;
+  mix-blend-mode: multiply;
+  background-image: radial-gradient(var(--app-black) .9px, transparent .9px);
+  background-size: 5px 5px;
+}
+
+.archetype-card.is-center {
+  background: var(--app-yellow);
+  color: var(--app-black);
+  border-color: var(--app-black);
+  box-shadow: 10px 10px 0 var(--app-black), 0 0 0 5px var(--app-yellow-soft);
+  opacity: 1;
+  filter: none;
+}
+
+.archetype-card.is-disabled {
+  opacity: .28;
+  filter: grayscale(1) contrast(.7);
+  box-shadow: 5px 5px 0 rgba(0,0,0,.9);
+}
+
+.card-index {
+  color: var(--app-black);
+  font-weight: 900;
+}
+
+.archetype-card h3 {
+  color: var(--app-black);
+  text-transform: uppercase;
+}
+
+.archetype-card p {
+  color: rgba(32,32,32,.72);
+  font-weight: 700;
+}
+
+.keyword,
+.mini-chip,
+.double-click-hint,
+.card-badge {
+  border: 2px solid var(--app-black);
+  background: transparent;
+  color: var(--app-black);
+  box-shadow: 2px 2px 0 var(--app-black);
+  font-weight: 900;
+}
+
+.card-badge {
+  background: var(--app-yellow-soft);
+}
+
+.card-footer .node-btn,
+.archetype-card .node-btn {
+  background: var(--app-light);
+  color: var(--app-black);
+  border: 2px solid var(--app-black);
+  box-shadow: 3px 3px 0 var(--app-black);
+}
+
+.archetype-card.is-center .node-btn {
+  background: var(--app-light);
+}
+
+/* Modal como página editorial impressa */
+.modal-layer {
+  background: rgba(32, 32, 32, .72);
+  backdrop-filter: blur(7px) grayscale(.35);
+}
+
+.modal-card {
+  background: var(--app-light);
+  color: var(--app-black);
+  border: var(--print-border-thick);
+  border-radius: 30px;
+  box-shadow: var(--print-shadow-lg);
+}
+
+.modal-card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: .18;
+  mix-blend-mode: multiply;
+  background-image: radial-gradient(var(--app-black) .9px, transparent .9px);
+  background-size: 5px 5px;
+}
+
+.modal-card h2 {
+  color: var(--app-black);
+  text-transform: uppercase;
+}
+
+.modal-close {
+  background: var(--app-yellow);
+}
+
+.modal-section {
+  border: var(--print-border);
+  border-radius: 18px;
+  background: #ececec;
+  box-shadow: 5px 5px 0 var(--app-black);
+}
+
+.modal-section h4 {
+  color: var(--app-black);
+  text-transform: uppercase;
+}
+
+.modal-section p,
+.modal-section ul {
+  color: rgba(32,32,32,.78);
+  font-weight: 650;
+}
+
+/* Fluxos pós-arquétipos como diagrama editorial, não neon */
+.node-screen,
+.flow-canvas,
+.workflow-stage,
+.final-node-map {
+  position: relative;
+}
+
+.workflow-context,
+.primary-color-context,
+.node-step-header,
+.flow-node,
+.option-node,
+.type-node,
+.color-node,
+.color-mini-node,
+.node-color-group,
+.color-group,
+.final-node {
+  background: var(--app-light) !important;
+  color: var(--app-black) !important;
+  border: var(--print-border) !important;
+  border-radius: var(--print-radius) !important;
+  backdrop-filter: none !important;
+  box-shadow: var(--print-shadow) !important;
+}
+
+.workflow-context,
+.primary-color-context,
+.node-step-header {
+  background: var(--app-yellow) !important;
+}
+
+.flow-node::before,
+.option-node::before,
+.type-node::before,
+.color-node::before,
+.color-mini-node::before,
+.final-node::before,
+.node-color-group::before,
+.color-group::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  opacity: .16;
+  mix-blend-mode: multiply;
+  background-image: radial-gradient(var(--app-black) .8px, transparent .8px);
+  background-size: 5px 5px;
+}
+
+.flow-node,
+.option-node,
+.type-node,
+.color-node,
+.color-mini-node,
+.final-node {
+  position: relative;
+  overflow: hidden;
+}
+
+.option-node:hover,
+.flow-node:hover,
+.type-node:hover,
+.color-node:hover,
+.color-mini-node:hover,
+.final-node:hover {
+  transform: translate(-3px, -3px) rotate(-.35deg);
+  box-shadow: 11px 11px 0 var(--app-black) !important;
+  border-color: var(--app-black) !important;
+}
+
+.option-node.is-selected,
+.flow-node.is-selected,
+.type-node.is-selected,
+.color-node.is-selected,
+.color-mini-node.is-selected,
+.color-mini.is-selected {
+  background: var(--app-yellow) !important;
+  color: var(--app-black) !important;
+  border-color: var(--app-black) !important;
+  box-shadow: 9px 9px 0 var(--app-black), inset 0 0 0 4px var(--app-yellow-soft) !important;
+}
+
+.option-node h3,
+.flow-node h3,
+.type-node h3,
+.color-node h3,
+.color-group h3,
+.node-color-group h3,
+.final-node h3,
+.option-node strong,
+.flow-node strong,
+.type-node strong,
+.color-node strong,
+.color-mini-node strong {
+  color: var(--app-black) !important;
+  text-transform: uppercase;
+}
+
+.option-node p,
+.flow-node p,
+.type-node p,
+.color-node p,
+.color-mini-node p,
+.color-mini-node small,
+.sample-body,
+.edit-fields label {
+  color: rgba(32,32,32,.76) !important;
+  font-weight: 650;
+}
+
+.sample-text {
+  border: 2px solid var(--app-black);
+  border-radius: 18px;
+  background: #efefef;
+  color: var(--app-black);
+  box-shadow: 4px 4px 0 var(--app-black);
+}
+
+.sample-title {
+  color: var(--app-black);
+}
+
+.swatch,
+.mini-swatch {
+  border: 3px solid var(--app-black) !important;
+  border-radius: 999px !important;
+  box-shadow: 6px 6px 0 var(--app-black) !important;
+}
+
+.swatch {
+  height: 92px;
+}
+
+.hex,
+.color-meta,
+.low-badge {
+  color: var(--app-black) !important;
+}
+
+.low-badge {
+  border: 2px solid var(--app-black);
+  background: var(--app-yellow-soft);
+  box-shadow: 2px 2px 0 var(--app-black);
+}
+
+.color-mini {
+  background: var(--app-light);
+  color: var(--app-black);
+  border: 2px solid var(--app-black);
+  border-radius: 20px;
+  box-shadow: 4px 4px 0 var(--app-black);
+}
+
+.color-mini.is-low {
+  opacity: .45;
+  filter: grayscale(.8);
+}
+
+.edit-fields input {
+  border: 2px solid var(--app-black);
+  border-radius: 14px;
+  background: #f1f1f1;
+  color: var(--app-black);
+  box-shadow: 3px 3px 0 var(--app-black);
+}
+
+.edit-fields input:focus {
+  border-color: var(--app-black);
+  box-shadow: 4px 4px 0 var(--app-black), inset 0 0 0 3px var(--app-yellow-soft);
+}
+
+/* Preview final como brand board impresso, preservando identidade dinâmica da marca */
+.final-layout {
+  align-items: start;
+}
+
+.preview-panel {
+  filter: none;
+}
+
+.brand-preview {
+  border: var(--print-border-thick);
+  border-radius: 28px;
+  box-shadow: var(--print-shadow-lg);
+  background: var(--brand-background);
+  color: var(--brand-text);
+}
+
+.preview-hero {
+  background:
+    linear-gradient(135deg, var(--brand-background), color-mix(in srgb, var(--brand-secondary) 14%, var(--brand-background)));
+}
+
+.preview-badge,
+.preview-cta {
+  border: 2px solid var(--brand-text);
+  box-shadow: 4px 4px 0 color-mix(in srgb, var(--brand-text) 90%, #000);
+  border-radius: 999px;
+}
+
+.preview-social {
+  border: 3px solid var(--brand-text);
+  border-radius: 18px;
+  box-shadow: 6px 6px 0 color-mix(in srgb, var(--brand-text) 88%, #000);
+  background: color-mix(in srgb, var(--brand-primary) 10%, var(--brand-background));
+}
+
+.swatch-pill {
+  border: 3px solid var(--app-black);
+  border-radius: 999px;
+  box-shadow: 3px 3px 0 var(--app-black);
+}
+
+/* Stickers gráficos simples, sem assets externos */
+.node-screen::before,
+.screen:not(.intro-screen)::after {
+  content: "✕";
+  position: absolute;
+  z-index: 0;
+  right: clamp(18px, 6vw, 86px);
+  top: clamp(130px, 18vh, 190px);
+  width: 78px;
+  height: 78px;
+  display: grid;
+  place-items: center;
+  color: var(--app-yellow);
+  font-family: var(--app-font-display);
+  font-size: 5rem;
+  opacity: .16;
+  transform: rotate(12deg);
+  pointer-events: none;
+}
+
+.node-screen::after {
+  content: "◉";
+  position: absolute;
+  z-index: 0;
+  left: clamp(20px, 5vw, 72px);
+  bottom: clamp(34px, 8vh, 96px);
+  color: var(--app-light);
+  font-family: var(--app-font-display);
+  font-size: 5rem;
+  opacity: .12;
+  pointer-events: none;
+}
+
+@media (max-width: 960px) {
+  .app-header {
+    border-radius: 24px;
+    box-shadow: 6px 6px 0 var(--app-black);
+  }
+
+  .intro-content,
+  .modal-card,
+  .brand-preview {
+    box-shadow: 8px 8px 0 var(--app-black);
+  }
+
+  .archetype-card {
+    min-height: 395px;
+    box-shadow: 6px 6px 0 var(--app-black);
+  }
+
+  .archetype-card.is-center {
+    box-shadow: 8px 8px 0 var(--app-black), 0 0 0 4px var(--app-yellow-soft);
+  }
+
+  .flow-node,
+  .option-node,
+  .type-node,
+  .color-node,
+  .color-mini-node,
+  .node-color-group,
+  .color-group,
+  .final-node {
+    box-shadow: 6px 6px 0 var(--app-black) !important;
+  }
+}
